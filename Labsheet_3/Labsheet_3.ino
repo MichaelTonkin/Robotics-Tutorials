@@ -60,24 +60,37 @@ void waitUntilVoltsLow()
 
 void countTime(unsigned long start_time, unsigned long end_time)
 {
-    // Store current microsecond count
+
+  unsigned long sensor_time;
+
   start_time = micros();
 
-  while(pinIsHigh()) {
-    doNothing();
+  bool done = false;
 
-    //wait for pin to become LOW
+  unsigned long timeout = 5000;
+
+  while( done != true ) {
+
+    unsigned long current_time = micros();
+
+    unsigned long elapsed_time = current_time - start_time;
+
+    if( elapsed_time >= timeout ) {
+
+        done = true;
+        sensor_time = timeout;
+    }
+
+    if( digitalRead( LSEN_LEFT_IN_PIN ) == LOW ) {
+
+        sensor_time = elapsed_time;
+        done = true;
+    }
+
   }
 
-  end_time = micros();
-  
-  elapsed_time = calculateElapsedTime(start_time, end_time);
+  printElapsedTime(sensor_time);
 
-  // Print output.
-  printElapsedTime(elapsed_time);
-
-  // Delay, just so that we have time toread the 
-  // values when using Serial.print().
   delay(100);
 }
 
