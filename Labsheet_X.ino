@@ -9,9 +9,13 @@
 # define R_PWM_PIN A9
 # define R_DIR_PIN 15
 
-# define FWD LOW
-# define REV HIGH
-int counter = 0;
+# define FWD HIGH
+# define REV LOW
+
+#define LWR_BOUND_PWM 130
+#define UPR_BOUND_PWM 255
+
+bool limit = false;
 
 // Runs once.
 void setup() {
@@ -26,8 +30,8 @@ void setup() {
   // Set initial direction (HIGH/LOW)
   // for the direction pins.
   // ...
-  digitalWrite(L_DIR_PIN, FWD);  
-  digitalWrite(R_DIR_PIN, FWD);
+  digitalWrite(L_DIR_PIN, REV);  
+  digitalWrite(R_DIR_PIN, REV);
   // Set initial power values for the PWM
   // Pins.
   // ...
@@ -44,19 +48,60 @@ void setup() {
 // Repeats.
 void loop() {
 
-  // Add code to set the direction of rotation
-  // for the left and right motor here.
-  analogWrite(L_DIR_PIN, REV);
-  analogWrite(R_DIR_PIN, REV);
-
-  // Use analogWrite() to set the power to the
-  // motors.
-  // 20 is a low level of activation to test
-  // the motor operation.
-  analogWrite( L_PWM_PIN, 255 );
-  analogWrite( R_PWM_PIN, 255 );
+  leftMotorTest();
 
   // An empty loop can block further uploads.
   // A small delay to prevent this for now.
-  delay(5);
+  delay(500);
+  while(limit == true)
+  {
+    analogWrite( L_PWM_PIN, 0);
+    analogWrite( R_PWM_PIN, 0);
+    delay(5);
+  }
+}
+
+/*
+ * Sets the power of the motors using analogWrite().
+ * This function sets direction and PWM (power).
+ * This function catches all errors of input PWM.
+ *  inputs: 
+ *     pwm   accepts negative, 0 and positve
+ *           values.  Sign of value used to set
+ *           the direction of the motor.  Values
+ *           are limited in range [ ??? : ??? ].
+ *           Magnitude used to set analogWrite().
+ */
+void setLeftMotorPower( float left_pwm )
+{
+  setLeftMotorDir( left_pwm );
+  analogWrite( L_PWM_PIN, abs(left_pwm) );
+}
+
+//if pwm is less than 0, then go in reverse.
+void setLeftMotorDir( float left_pwm)
+{
+  if(left_pwm < 0)
+  {
+    digitalWrite(L_DIR_PIN, FWD);
+    Serial.println("fwd");
+  }
+  else
+  {
+    digitalWrite(L_DIR_PIN, REV);
+    Serial.println("rev");
+  }
+}
+
+void leftMotorTest()
+{
+  for(int i = -255; i <=255; i++)
+  {
+    setLeftMotorPower(i);
+    Serial.println(i);
+    delay(50);
+
+    if ( i == -130 )
+      i = 130;
+  }
 }

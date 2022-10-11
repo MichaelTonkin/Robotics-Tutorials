@@ -1,0 +1,2 @@
+Minimum motor PWM for reverse: 130.
+Minimum motor PWM for forward: 130.
