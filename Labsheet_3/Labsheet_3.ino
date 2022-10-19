@@ -9,7 +9,7 @@
 
 int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
 unsigned long ls_ts = 0;
-unsigned long sensor_outputs[MAX_LSEN_PIN] = {0,0,0};
+unsigned long sensor_outputs[MAX_LSEN_PIN];
 
 void setup() 
 {  
@@ -24,40 +24,7 @@ void setup()
 void loop() 
 {
   lineSensorLoop();
-
-  float e_line;
-  e_line = getLineError(); 
-
-  float turn_pwm;
-  turn_pwm = 0;
-
-  turn_pwm = turn_pwm * e_line;
-
   //setMotorValues( (0 - turn_pwm), (0 + turn_pwm) );
-}
-
-float getLineError() {
-  float e_line;
-  float w_left;
-  float w_right;
-
-  // Get latest line sensor readings.
-  // You may need to call an updateLineSensor()
-  // function from loop before hand - it depends
-  // on your implementation.
-
-  // Sum ground sensor activation
-  
-  // Normalise individual sensor readings 
-  // against sum
-
-  // Calculated error signal
-  w_right = 0;
-  w_left  = 0;
-  e_line  = 0;
-
-  // Return result
-  return e_line;
 }
 
 void lineSensorLoop()
@@ -71,7 +38,7 @@ void lineSensorLoop()
 
       // Conduct a read of the line sensors
       countTime();
-
+      lineDetector();
       // Record when this execution happened.
       // for future iterations of loop()
       ls_ts = millis();
@@ -85,6 +52,46 @@ void enableLineSensors()
   pinMode(LSEN_LEFT_IN_PIN, INPUT);
   pinMode(LSEN_CENTRE_IN_PIN, INPUT);
   pinMode(LSEN_RIGHT_IN_PIN, INPUT);
+}
+
+void lineDetector()
+{
+  float e_line;
+  e_line = getLineError(); 
+
+  float turn_pwm;
+  turn_pwm = 255;
+
+  turn_pwm = turn_pwm * e_line;
+}
+
+float getLineError() 
+{
+  float e_line;
+  float w_left;
+  float w_right;
+  unsigned long lsen_left = sensor_outputs[0];
+  unsigned long lsen_centre = sensor_outputs[1];
+  unsigned long lsen_right = sensor_outputs[2];
+  unsigned long lsen_sum;
+  // Sum ground sensor activation
+  lsen_sum = lsen_left + lsen_centre + lsen_right;
+  
+  w_left = lsen_left + (lsen_centre * 0.5);
+  w_right = lsen_right + (lsen_centre * 0.5);
+
+  // Normalise individual sensor readings 
+  // against sum
+
+  w_left = (w_left - (-1)) / (1 - (-1));
+  w_right = (w_right - (-1)) / (1 - (-1));
+  
+  // Calculated error signal
+  e_line  = w_left - w_right;
+  Serial.println("line error");
+  Serial.println(w_left);
+  // Return result
+  return e_line;
 }
 
 void countTime()
@@ -126,7 +133,7 @@ void countTime()
       remaining = 0;
     }
   }
-  Serial.println(sensor_outputs[1]);
+  
   printElapsedTime(sensor_outputs);
 }
 
