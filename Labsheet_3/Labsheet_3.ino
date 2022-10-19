@@ -3,6 +3,8 @@
 # define LSEN_RIGHT_IN_PIN A3
 # define EMIT 11
 # define MAX_LSEN_PIN 3
+# define LINE_SENSOR_UPDATE 100
+# define MOTOR_UPDATE 2000
 # define SECONDS 1000
 
 int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
@@ -24,8 +26,24 @@ void loop()
 
 void lineSensorLoop()
 {
+  unsigned long current_ts;
+  unsigned long elapsed_t;
   unsigned long sensor_time[MAX_LSEN_PIN];
-  countTime();
+
+  current_ts = millis();
+  elapsed_t = current_ts - ls_ts;
+  
+  if( elapsed_t > LINE_SENSOR_UPDATE ) {
+
+      // Conduct a read of the line sensors
+      countTime();
+
+      // Record when this execution happened.
+      // for future iterations of loop()
+      ls_ts = millis();
+
+  }
+
   delay(100);
 }
 
