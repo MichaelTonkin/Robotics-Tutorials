@@ -8,6 +8,8 @@
 # define SECONDS 1000
 
 int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
+unsigned long ls_ts = 0;
+unsigned long sensor_outputs[MAX_LSEN_PIN] = {0,0,0};
 
 void setup() 
 {  
@@ -22,14 +24,46 @@ void setup()
 void loop() 
 {
   lineSensorLoop();
+
+  float e_line;
+  e_line = getLineError(); 
+
+  float turn_pwm;
+  turn_pwm = 0;
+
+  turn_pwm = turn_pwm * e_line;
+
+  //setMotorValues( (0 - turn_pwm), (0 + turn_pwm) );
+}
+
+float getLineError() {
+  float e_line;
+  float w_left;
+  float w_right;
+
+  // Get latest line sensor readings.
+  // You may need to call an updateLineSensor()
+  // function from loop before hand - it depends
+  // on your implementation.
+
+  // Sum ground sensor activation
+  
+  // Normalise individual sensor readings 
+  // against sum
+
+  // Calculated error signal
+  w_right = 0;
+  w_left  = 0;
+  e_line  = 0;
+
+  // Return result
+  return e_line;
 }
 
 void lineSensorLoop()
 {
   unsigned long current_ts;
   unsigned long elapsed_t;
-  unsigned long sensor_time[MAX_LSEN_PIN];
-
   current_ts = millis();
   elapsed_t = current_ts - ls_ts;
   
@@ -43,8 +77,6 @@ void lineSensorLoop()
       ls_ts = millis();
 
   }
-
-  delay(100);
 }
 
 void enableLineSensors()
@@ -55,16 +87,13 @@ void enableLineSensors()
   pinMode(LSEN_RIGHT_IN_PIN, INPUT);
 }
 
-unsigned long countTime()
+void countTime()
 {
   //unsigned long sensor_time;
   unsigned long start_time = micros();
   unsigned long elapsed_time;
   unsigned long current_time;
-  unsigned long sensor_read[MAX_LSEN_PIN];
   unsigned long timeout = 5 * SECONDS;
-  Serial.println("test");
-  Serial.println(sensor_read[1]);
   bool done = false;
 
   int remaining = MAX_LSEN_PIN;
@@ -75,7 +104,7 @@ unsigned long countTime()
   for(int i = 0; i < MAX_LSEN_PIN; i++)
   {
     chargeCapacitor(lsen_pin[i]);
-    sensor_read[i] = 0;
+    sensor_outputs[i] = 0;
   }
 
   while( remaining > 0)
@@ -84,10 +113,10 @@ unsigned long countTime()
     {
       if(pinIsLow(lsen_pin[w])) 
       {
-        if(sensorIsUnread(sensor_read[w]))
+        if(sensorIsUnread(sensor_outputs[w]))
         {
           current_time = micros();
-          sensor_read[w] = calculateElapsedTime(start_time, current_time);
+          sensor_outputs[w] = calculateElapsedTime(start_time, current_time);
           remaining = remaining - 1;
         }
       }
@@ -95,14 +124,10 @@ unsigned long countTime()
     if (timedOut(elapsed_time, timeout))
     {
       remaining = 0;
-      //Serial.println("--------------");
-      //Serial.println("TIMEOUT");
-      //Serial.println("--------------");
     }
   }
-
-  printElapsedTime(sensor_read);
-  return sensor_read;
+  Serial.println(sensor_outputs[1]);
+  printElapsedTime(sensor_outputs);
 }
 
 bool sensorIsUnread(unsigned long sensor)
