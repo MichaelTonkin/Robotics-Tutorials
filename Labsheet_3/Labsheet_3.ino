@@ -6,13 +6,18 @@
 # define LINE_SENSOR_UPDATE 100
 # define MOTOR_UPDATE 2000
 # define SECONDS 1000
+# define GAIN 10
+
+#include "motors.h"
 
 int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
 unsigned long ls_ts = 0;
 unsigned long sensor_outputs[MAX_LSEN_PIN];
+Motors_c motors;
 
 void setup() 
 {  
+  motors.initialise();
   Serial.begin(4800);
   delay(1000);
   Serial.println("It has begin...");
@@ -82,16 +87,23 @@ float getLineError()
 
   // Normalise individual sensor readings 
   // against sum
-
-  w_left = (w_left - (-1)) / (1 - (-1));
-  w_right = (w_right - (-1)) / (1 - (-1));
-  
+  w_left =  (w_left - (1530)) / (9410 - 1530) ;
+  w_right =  (w_right - (1600)) / (10524 - 1600) ;
   // Calculated error signal
   e_line  = w_left - w_right;
   Serial.println("line error");
-  Serial.println(w_left);
+  Serial.println(e_line);
+
+  speedGainFunc(e_line);
+  
   // Return result
   return e_line;
+
+}
+
+float speedGainFunc(float e_line)
+{
+  return e_line * GAIN;
 }
 
 void countTime()
