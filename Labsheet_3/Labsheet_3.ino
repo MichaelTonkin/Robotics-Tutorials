@@ -28,6 +28,9 @@ void setup()
 
 void loop() 
 {
+  motors.setSpeed(100);
+  motors.turnLeft();
+  motors.turnRight();
   lineSensorLoop();
   //setMotorValues( (0 - turn_pwm), (0 + turn_pwm) );
 }

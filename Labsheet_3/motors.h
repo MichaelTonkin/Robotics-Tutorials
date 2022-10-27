@@ -11,8 +11,10 @@
 # define FWD HIGH
 # define REV LOW
 
-#define LWR_BOUND_PWM 130
+#define LWR_BOUND_PWM 127
 #define UPR_BOUND_PWM 255
+
+int speed = 0;
 
 class Motors_c {
   public:
@@ -47,22 +49,52 @@ class Motors_c {
       Serial.println("***RESET***");
     }
 
-
-void setMotorSpeed()
+//due to the motor speed being very high even at low PWM setting
+//use this function to pause motor function to allow it to slow down
+bool motorPause()
 {
-  //empty
+  unsigned long current_ts;
+  unsigned long elapsed_t;
+  unsigned long ls_ts = 0;
+  current_ts = millis();
+  elapsed_t = current_ts - ls_ts;
+  
+  int pause = getSpeed();
+
+  if( elapsed_t > pause ) {
+
+      return true;
+
+  }
+  return false;
+}
+
+void setSpeed(int new_speed)
+{
+  speed = new_speed;
+}
+
+int getSpeed()
+{
+  return speed;
 }
 
 void turnLeft()
 {
   setMotorDir(L_PWM_PIN, 1);
-  setMotorPower(L_PWM_PIN, 127);
+  setMotorPower(L_PWM_PIN, 130);
+  motorPause();
+  setMotorPower(L_PWM_PIN, 0);
+  motorPause();
 }
 
 void turnRight()
 {
   setMotorDir(R_PWM_PIN, 1);
-  setMotorPower(R_PWM_PIN, 127);
+  setMotorPower(R_PWM_PIN, 130);
+  motorPause();
+  setMotorPower(R_PWM_PIN, 0);
+  motorPause();
 }
 
 void setMotorPower( int pin, float power )
