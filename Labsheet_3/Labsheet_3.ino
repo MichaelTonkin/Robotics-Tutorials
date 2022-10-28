@@ -1,3 +1,6 @@
+#include <math.h> 
+#include "motors.h"
+
 # define LSEN_LEFT_IN_PIN A0
 # define LSEN_CENTRE_IN_PIN A2
 # define LSEN_RIGHT_IN_PIN A3
@@ -11,11 +14,13 @@
 # define SENSOR_C 1
 # define SENSOR_R 2
 
-#include "motors.h"
 
 int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
 unsigned long ls_ts = 0;
 unsigned long sensor_outputs[MAX_LSEN_PIN];
+const int sample_size = 100;
+unsigned long samples[MAX_LSEN_PIN][sample_size];
+
 Motors_c motors;
 
 void setup() 
@@ -28,6 +33,7 @@ void setup()
   motors.setSpeed(10);
   enableLineSensors();
   calibrate(SENSOR_R);
+  calibrate(SENSOR_L);
  
 }
 
@@ -36,14 +42,14 @@ void loop()
   lineSensorLoop(); 
 }
 
-//do this for each sensor
-int count = 0;
-const int sample_size = 100;
-unsigned long samples[MAX_LSEN_PIN][sample_size];
+
 void calibrate(int sensor)
 {
+  unsigned long target_time_modi = 50;
   unsigned long start_time = millis();
-  unsigned long target_time = 1000 + millis();
+  unsigned long target_time = target_time_modi + millis();
+  int count = 0;
+
   while(count < sample_size)
   {
     motors.moveLeft(1);// test printing the sensor output
@@ -53,6 +59,7 @@ void calibrate(int sensor)
       if (samples[sensor][99] == 0)
       {
         samples[sensor][count] = sensor_outputs[sensor];
+        Serial.println(samples[sensor][count]);
         count+=1;
       } 
       else
@@ -60,10 +67,12 @@ void calibrate(int sensor)
         count = 0;
       }
       start_time = millis();
-      target_time = 1000 + millis();
+      target_time = target_time_modi + millis();
     }
   }
 
+  insertionSort(samples[sensor], sample_size);
+  printArray(samples[sensor], sample_size);
 }
 
 //don't update start time until this function returns true
@@ -82,6 +91,41 @@ bool timer(unsigned long target_time, unsigned long start_time)
   
 }
 
+void insertionSort(unsigned long array[], int n) 
+{ 
+  int i, element, j; 
+  for (i = 1; i < n; i++) 
+  { 
+    element = array[i]; 
+    j = i - 1; 
+    while (j >= 0 && array[j] > element) 
+    { 
+      array[j + 1] = array[j]; 
+      j = j - 1; 
+    } 
+  array[j + 1] = element; 
+  } 
+}  
+
+void printArray(unsigned long array[], int n) 
+{ 
+  int i; 
+  Serial.println("BEGIN PRINTING");
+  for (i = 0; i < n; i++) 
+  {
+    Serial.println(array[i]); 
+  }
+}
+
+unsigned long getMaxSenValue(int sensor)
+{
+  return samples[sensor][sample_size - 1];
+}
+
+unsigned long getMinSenValue(int sensor)
+{
+  return samples[sensor][0];
+}
 
 void lineSensorLoop()
 {
@@ -149,7 +193,7 @@ void countTime()
     }
   }
   
-  //printElapsedTime(sensor_outputs);
+  printElapsedTime(sensor_outputs);
 }
 
 void lineDetector()
@@ -180,12 +224,12 @@ float getLineError()
 
   // Normalise individual sensor readings 
   // against sum
-  w_left =  (w_left - (1530)) / (9410 - 1530) ;
-  w_right =  (w_right - (1600)) / (10524 - 1600) ;
+  w_left =  (w_left - (getMinSenValue(SENSOR_L))) / (getMaxSenValue(SENSOR_L) - getMinSenValue(SENSOR_L)) ;
+  w_right =  (w_right - (getMinSenValue(SENSOR_R))) / (getMaxSenValue(SENSOR_R) - getMinSenValue(SENSOR_R)) ;
   // Calculated error signal
   e_line  = w_left - w_right;
-  //Serial.println("line error");
-  //Serial.println(e_line);
+  Serial.println("line error");
+  Serial.println(e_line);
 
   speedGainFunc(e_line);
   
@@ -198,8 +242,6 @@ float speedGainFunc(float e_line)
 {
   return e_line * GAIN;
 }
-
-
 
 bool sensorIsUnread(unsigned long sensor)
 {
