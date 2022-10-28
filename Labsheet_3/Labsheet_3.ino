@@ -7,6 +7,9 @@
 # define MOTOR_UPDATE 2000
 # define SECONDS 1000
 # define GAIN 10
+# define SENSOR_L 0
+# define SENSOR_C 1
+# define SENSOR_R 2
 
 #include "motors.h"
 
@@ -22,18 +25,65 @@ void setup()
   delay(1000);
   Serial.println("It has begin...");
   delay(1000);
+  motors.setSpeed(10);
   enableLineSensors();
-  //beginLogging();
+  calibrate(SENSOR_R);
+ 
 }
 
 void loop() 
 {
-  motors.setSpeed(100);
-  motors.turnLeft();
-  motors.turnRight();
-  lineSensorLoop();
-  //setMotorValues( (0 - turn_pwm), (0 + turn_pwm) );
+  lineSensorLoop(); 
 }
+
+//do this for each sensor
+int count = 0;
+const int sample_size = 100;
+unsigned long samples[MAX_LSEN_PIN][sample_size];
+void calibrate(int sensor)
+{
+  unsigned long start_time = millis();
+  unsigned long target_time = 1000 + millis();
+  while(count < sample_size)
+  {
+    motors.moveLeft(1);
+    lineSensorLoop();
+    if(timer(target_time, start_time))
+    {
+      if (samples[sensor][99] == 0)
+      {
+        samples[sensor][count] = sensor_outputs[sensor];
+        count+=1;
+        Serial.print("sample: ");
+        Serial.println(samples[sensor][count]);
+      } 
+      else
+      {
+        count = 0;
+      }
+      start_time = millis();
+      target_time = 1000 + millis();
+    }
+  }
+
+}
+
+//don't update start time until this function returns true
+bool timer(unsigned long target_time, unsigned long start_time)
+{
+  unsigned long current_ts;
+  unsigned long elapsed_ts;
+  current_ts = millis();
+
+  if( current_ts > target_time ) 
+  {
+      return true;
+  }
+
+  return false;
+  
+}
+
 
 void lineSensorLoop()
 {
@@ -60,53 +110,6 @@ void enableLineSensors()
   pinMode(LSEN_LEFT_IN_PIN, INPUT);
   pinMode(LSEN_CENTRE_IN_PIN, INPUT);
   pinMode(LSEN_RIGHT_IN_PIN, INPUT);
-}
-
-void lineDetector()
-{
-  float e_line;
-  e_line = getLineError(); 
-
-  float turn_pwm;
-  turn_pwm = 255;
-
-  turn_pwm = turn_pwm * e_line;
-}
-
-float getLineError() 
-{
-  float e_line;
-  float w_left;
-  float w_right;
-  unsigned long lsen_left = sensor_outputs[0];
-  unsigned long lsen_centre = sensor_outputs[1];
-  unsigned long lsen_right = sensor_outputs[2];
-  unsigned long lsen_sum;
-  // Sum ground sensor activation
-  lsen_sum = lsen_left + lsen_centre + lsen_right;
-  
-  w_left = lsen_left + (lsen_centre * 0.5);
-  w_right = lsen_right + (lsen_centre * 0.5);
-
-  // Normalise individual sensor readings 
-  // against sum
-  w_left =  (w_left - (1530)) / (9410 - 1530) ;
-  w_right =  (w_right - (1600)) / (10524 - 1600) ;
-  // Calculated error signal
-  e_line  = w_left - w_right;
-  Serial.println("line error");
-  Serial.println(e_line);
-
-  speedGainFunc(e_line);
-  
-  // Return result
-  return e_line;
-
-}
-
-float speedGainFunc(float e_line)
-{
-  return e_line * GAIN;
 }
 
 void countTime()
@@ -149,8 +152,57 @@ void countTime()
     }
   }
   
-  printElapsedTime(sensor_outputs);
+  //printElapsedTime(sensor_outputs);
 }
+
+void lineDetector()
+{
+  float e_line;
+  e_line = getLineError(); 
+
+  float turn_pwm;
+  turn_pwm = 255;
+
+  turn_pwm = turn_pwm * e_line;
+}
+
+float getLineError() 
+{
+  float e_line;
+  float w_left;
+  float w_right;
+  unsigned long lsen_left = sensor_outputs[0];
+  unsigned long lsen_centre = sensor_outputs[1];
+  unsigned long lsen_right = sensor_outputs[2];
+  unsigned long lsen_sum;
+  // Sum ground sensor activation
+  lsen_sum = lsen_left + lsen_centre + lsen_right;
+  
+  w_left = lsen_left + (lsen_centre * 0.5);
+  w_right = lsen_right + (lsen_centre * 0.5);
+
+  // Normalise individual sensor readings 
+  // against sum
+  w_left =  (w_left - (1530)) / (9410 - 1530) ;
+  w_right =  (w_right - (1600)) / (10524 - 1600) ;
+  // Calculated error signal
+  e_line  = w_left - w_right;
+  //Serial.println("line error");
+  //Serial.println(e_line);
+
+  speedGainFunc(e_line);
+  
+  // Return result
+  return e_line;
+
+}
+
+float speedGainFunc(float e_line)
+{
+  return e_line * GAIN;
+}
+
+
 
 bool sensorIsUnread(unsigned long sensor)
 {

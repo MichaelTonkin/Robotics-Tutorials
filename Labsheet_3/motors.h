@@ -8,8 +8,8 @@
 # define R_PWM_PIN A9
 # define R_DIR_PIN 15
 
-# define FWD HIGH
-# define REV LOW
+# define FWD LOW
+# define REV HIGH
 
 #define LWR_BOUND_PWM 127
 #define UPR_BOUND_PWM 255
@@ -51,20 +51,19 @@ class Motors_c {
 
 //due to the motor speed being very high even at low PWM setting
 //use this function to pause motor function to allow it to slow down
+unsigned long last_ts = 0;
 bool motorPause()
 {
   unsigned long current_ts;
-  unsigned long elapsed_t;
-  unsigned long ls_ts = 0;
+  unsigned long elapsed;
   current_ts = millis();
-  elapsed_t = current_ts - ls_ts;
+  elapsed = current_ts - last_ts;
   
   int pause = getSpeed();
-
-  if( elapsed_t > pause ) {
-
+  
+  if( elapsed > pause ) {
+      last_ts = current_ts;  
       return true;
-
   }
   return false;
 }
@@ -79,16 +78,41 @@ int getSpeed()
   return speed;
 }
 
+void moveForward()
+{
+  moveLeft(1);
+  moveRight(1);
+}
+
+void moveReverse()
+{
+  moveLeft(-1);
+  moveRight(-1);
+}
+
 void turnLeft()
 {
+  moveLeft(-1);
+  moveRight(1);  
+}
+
+void turnRight()
+{
+  moveLeft(1);
+  moveRight(-1);
+}
+
+void moveLeft(int dir)
+{
   setMotorDir(L_PWM_PIN, 1);
+  
   setMotorPower(L_PWM_PIN, 130);
   motorPause();
   setMotorPower(L_PWM_PIN, 0);
   motorPause();
 }
 
-void turnRight()
+void moveRight(int dir)
 {
   setMotorDir(R_PWM_PIN, 1);
   setMotorPower(R_PWM_PIN, 130);
@@ -111,11 +135,11 @@ void setMotorDir( int pin, int dir)
 
   if(dir == -1)
   {
-    digitalWrite(dir_pin, FWD);
+    digitalWrite(dir_pin, REV);
   }
   else if (dir == 1)
   {
-    digitalWrite(dir_pin, REV);
+    digitalWrite(dir_pin, FWD);
   }
 }
 
