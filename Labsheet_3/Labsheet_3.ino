@@ -46,7 +46,7 @@ void calibrate(int sensor)
   unsigned long target_time = 1000 + millis();
   while(count < sample_size)
   {
-    motors.moveLeft(1);
+    motors.moveLeft(1);// test printing the sensor output
     lineSensorLoop();
     if(timer(target_time, start_time))
     {
@@ -54,8 +54,6 @@ void calibrate(int sensor)
       {
         samples[sensor][count] = sensor_outputs[sensor];
         count+=1;
-        Serial.print("sample: ");
-        Serial.println(samples[sensor][count]);
       } 
       else
       {
@@ -120,7 +118,6 @@ void countTime()
   unsigned long current_time;
   unsigned long timeout = 5 * SECONDS;
   bool done = false;
-
   int remaining = MAX_LSEN_PIN;
 //new code needs to go here
       //we need to charge each capacitor
