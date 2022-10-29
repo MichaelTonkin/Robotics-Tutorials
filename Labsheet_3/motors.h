@@ -1,7 +1,6 @@
 // this #ifndef stops this file
 // from being included mored than
 // once by the compiler. 
-#ifndef _MOTORS_H
 #define _MOTORS_H
 # define L_PWM_PIN A10
 # define L_DIR_PIN 16
@@ -14,10 +13,10 @@
 #define LWR_BOUND_PWM 127
 #define UPR_BOUND_PWM 255
 
-int speed = 0;
 
 class Motors_c {
   public:
+  int speed = 0;
 
     // Constructor, must exist.
     Motors_c() {
@@ -104,7 +103,7 @@ void turnRight()
 
 void moveLeft(int dir)
 {
-  setMotorDir(L_PWM_PIN, 1);
+  setMotorDir(L_PWM_PIN, dir);
   
   setMotorPower(L_PWM_PIN, 130);
   motorPause();
@@ -114,7 +113,7 @@ void moveLeft(int dir)
 
 void moveRight(int dir)
 {
-  setMotorDir(R_PWM_PIN, 1);
+  setMotorDir(R_PWM_PIN, dir);
   setMotorPower(R_PWM_PIN, 130);
   motorPause();
   setMotorPower(R_PWM_PIN, 0);
@@ -159,4 +158,3 @@ int setDirPin(int pwn_pin)
 
 
 
-#endif
