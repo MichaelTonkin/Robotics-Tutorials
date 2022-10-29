@@ -1,6 +1,6 @@
-#include <math.h> 
+
 #include "motors.h"
-#include "calibrator.h"
+#include "linesensor.h"
 
 # define LSEN_LEFT_IN_PIN A0
 # define LSEN_CENTRE_IN_PIN A2
@@ -15,26 +15,21 @@
 # define SENSOR_C 1
 # define SENSOR_R 2
 
-Motors_c motors;
-LineSensor_c lineSensor;
-Calibrator_c calib;
+LineSensor_c linesensor;
 
 void setup() 
 {  
-  motors.initialise();
   Serial.begin(4800);
   delay(1000);
   Serial.println("It has begin...");
   delay(1000);
-  lineSensor.enableLineSensors();
-  calib.calibrate(SENSOR_R);
-  calib.calibrate(SENSOR_L);
+  linesensor.initialize();
  
 }
 
 void loop() 
 {
-  lineSensor.lineSensorLoop(); 
+  linesensor.lineSensorLoop(); 
 }
 
 
