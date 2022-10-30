@@ -5,7 +5,8 @@
 # define STATE_INITIAL 0
 # define STATE_JOIN_LINE 1
 # define STATE_FOUND_LINE 2
-# define STATE_STOP 4
+# define STATE_FOLLOW_LINE 4
+# define STATE_STOP 5
 # define GREEN_LED 30
 # define YELLOW_LED 13
 # define RED_LED 17
@@ -46,7 +47,7 @@ void updateState()
   }
   else if (state == STATE_FOUND_LINE)
   {
-    state = STATE_STOP;
+    state = STATE_FOLLOW_LINE;
   }
 }
 
@@ -67,6 +68,10 @@ if( state == STATE_INITIAL ) {
   else if (state == STATE_STOP)
   {
     stopRobot();
+  }
+  else if (state == STATE_FOLLOW_LINE)
+  {
+    followLine();
   }
   else {
 
@@ -95,6 +100,11 @@ void foundLineBeeps()
   delay(1000);
 }
 
+void followLine()
+{
+  linesensor.followLine();
+}
+
 void stopRobot()
 {
 
@@ -105,15 +115,6 @@ void signalError()
 
 }
 
-void intialisingBeeps() 
-{
-
-}
-
-void foundLineBeep() 
-{
-
-}
 
 bool timer(unsigned long target_time, unsigned long start_time)
 {

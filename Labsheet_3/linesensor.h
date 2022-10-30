@@ -54,7 +54,7 @@ void initialize()
   tape[SENSOR_L] = samples[SENSOR_L][SAMPLE_SIZE-25]; 
   tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-25]; 
   tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-25]; 
-   
+
   initComplete = true;
   delay(3000);
 }
@@ -80,6 +80,22 @@ void controller()
     //motors.moveForward();
   }
   
+}
+
+void followLine()
+{
+  if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
+  {
+    motors.turnLeft();
+  }
+  else if(sensorIsOnTape(SENSOR_R, tape[SENSOR_R]))
+  {
+    motors.turnRight();
+  }
+  else if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C])) //TODO if none of them are on the tape
+  {
+    motors.moveForward();
+  }
 }
 
 bool sensorIsOnTape(int sensor, unsigned long tape)
