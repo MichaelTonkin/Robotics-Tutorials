@@ -22,16 +22,21 @@
 // Class to operate the linesensor(s).
 class LineSensor_c {
   private:
-
+  bool centreIsOnTape;
+  bool leftIsOnTape;
+  bool rightIsOnTape;
+  bool initComplete;
   public:
   
   Motors_c motors;
-  
+
   int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
   unsigned long ls_ts = 0;
   unsigned long sensor_outputs[MAX_LSEN_PIN];
   static const int SAMPLE_SIZE = 100;
   unsigned long samples[MAX_LSEN_PIN][SAMPLE_SIZE];
+
+  unsigned long tape[MAX_LSEN_PIN];
 
 LineSensor_c() {
 
@@ -44,42 +49,54 @@ void initialize()
   motors.setSpeed(10);
   calibrate(SENSOR_R);
   calibrate(SENSOR_L); 
-  calibrate(SENSOR_C);  
+  calibrate(SENSOR_C); 
+  
+  tape[SENSOR_L] = samples[SENSOR_L][SAMPLE_SIZE-25]; 
+  tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-25]; 
+  tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-25]; 
+   
+  initComplete = true;
+  delay(3000);
+}
+
+bool getInitComplete()
+{
+  return initComplete;
 }
 
 void controller()
 {
-  unsigned long tape[MAX_LSEN_PIN];
-  tape[SENSOR_L] = samples[SENSOR_L][SAMPLE_SIZE-25]; 
-  tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-25]; 
-  tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-25]; 
-  bool notOnTape = sensor_outputs[SENSOR_C] < tape[SENSOR_C];
   
-
-
-  //TODO if centre is on tape move forward
-  //OTherwise turn
-  //IF right touches line at all then turn right
-  //same with left
-    //right sensor is higher than left sensor move left
   if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
   {
-    motors.turnLeft();
+    //motors.turnLeft();
   }
   else if(sensorIsOnTape(SENSOR_R, tape[SENSOR_R]))
   {
-    motors.turnRight();
+    //motors.turnRight();
   }
   else if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C])) //TODO if none of them are on the tape
   {
-    motors.moveForward();
+    //motors.moveForward();
   }
   
 }
 
 bool sensorIsOnTape(int sensor, unsigned long tape)
 {
-  return sensor_outputs[sensor] > tape;
+  if( sensor_outputs[sensor] > tape )
+  {
+    return true;
+  }  
+  else
+  {
+    return false;
+  }
+}
+
+bool getCentreLSenIsOnTape()
+{ 
+    return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]);
 }
 
 void findLine()

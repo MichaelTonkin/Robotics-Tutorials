@@ -5,6 +5,10 @@
 # define STATE_INITIAL 0
 # define STATE_JOIN_LINE 1
 # define STATE_FOUND_LINE 2
+# define STATE_STOP 4
+# define GREEN_LED 30
+# define YELLOW_LED 13
+# define RED_LED 17
 
 LineSensor_c linesensor;
 int state;
@@ -15,35 +19,56 @@ void setup()
   delay(1000);
   Serial.println("It has begin...");
   delay(1000);
-  linesensor.initialize();
- 
+  state = STATE_INITIAL;
 }
 
 void loop() 
 {
   linesensor.lineSensorLoop();
   linesensor.controller();
-  //selectState();
-  //updateState(); 
+  updateState(); 
+  selectState();
 }
 
+bool complete;
+
+void updateState()
+{
+  if (state == STATE_INITIAL && linesensor.getInitComplete())
+  {
+    state = STATE_JOIN_LINE;
+  }
+  else if (state == STATE_JOIN_LINE)
+  {
+    state = STATE_JOIN_LINE;
+    if (linesensor.getCentreLSenIsOnTape())
+    {state = STATE_FOUND_LINE;}
+  }
+  else if (state == STATE_FOUND_LINE)
+  {
+    state = STATE_STOP;
+  }
+}
 
 void selectState()
 {
-
+  
 if( state == STATE_INITIAL ) {
 
-    linesensor.initialize();     
+    linesensor.initialize();    
 
   } else if( state == STATE_JOIN_LINE ) {
 
-    driveForwards();     
-
+    driveForwards();
+        
   } else if( state == STATE_FOUND_LINE ) {
-
     foundLineBeeps();
-
-  } else {
+  }
+  else if (state == STATE_STOP)
+  {
+    stopRobot();
+  }
+  else {
 
     Serial.print("System Error, Unknown state: ");
     Serial.println( state );
@@ -59,12 +84,15 @@ if( state == STATE_INITIAL ) {
 
 void driveForwards()
 {
-
+  linesensor.motors.moveForward(); 
 }
 
 void foundLineBeeps()
 {
-
+  digitalWrite( GREEN_LED, HIGH );
+  digitalWrite( RED_LED, HIGH );
+  digitalWrite( YELLOW_LED, HIGH );
+  delay(1000);
 }
 
 void stopRobot()
@@ -77,11 +105,6 @@ void signalError()
 
 }
 
-void updateState()
-{
-
-}
-
 void intialisingBeeps() 
 {
 
@@ -90,6 +113,21 @@ void intialisingBeeps()
 void foundLineBeep() 
 {
 
+}
+
+bool timer(unsigned long target_time, unsigned long start_time)
+{
+  unsigned long current_ts;
+  unsigned long elapsed_ts;
+  current_ts = millis();
+
+  if( current_ts > target_time ) 
+  {
+      return true;
+  }
+
+  return false;
+  
 }
 
 void beginLogging()
