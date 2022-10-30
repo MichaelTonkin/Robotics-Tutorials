@@ -2,20 +2,12 @@
 #include "motors.h"
 #include "linesensor.h"
 
-# define LSEN_LEFT_IN_PIN A0
-# define LSEN_CENTRE_IN_PIN A2
-# define LSEN_RIGHT_IN_PIN A3
-# define EMIT 11
-# define MAX_LSEN_PIN 3
-# define LINE_SENSOR_UPDATE 100
-# define MOTOR_UPDATE 2000
-# define SECONDS 1000
-# define GAIN 10
-# define SENSOR_L 0
-# define SENSOR_C 1
-# define SENSOR_R 2
+# define STATE_INITIAL 0
+# define STATE_JOIN_LINE 1
+# define STATE_FOUND_LINE 2
 
 LineSensor_c linesensor;
+int state;
 
 void setup() 
 {  
@@ -29,9 +21,76 @@ void setup()
 
 void loop() 
 {
-  linesensor.lineSensorLoop(); 
+  linesensor.lineSensorLoop();
+  linesensor.controller();
+  //selectState();
+  //updateState(); 
 }
 
+
+void selectState()
+{
+
+if( state == STATE_INITIAL ) {
+
+    linesensor.initialize();     
+
+  } else if( state == STATE_JOIN_LINE ) {
+
+    driveForwards();     
+
+  } else if( state == STATE_FOUND_LINE ) {
+
+    foundLineBeeps();
+
+  } else {
+
+    Serial.print("System Error, Unknown state: ");
+    Serial.println( state );
+
+    Serial.print("Error code: ");
+    //Serial.println( error_code );
+
+    stopRobot();
+    signalError();
+  }
+  
+}
+
+void driveForwards()
+{
+
+}
+
+void foundLineBeeps()
+{
+
+}
+
+void stopRobot()
+{
+
+}
+
+void signalError()
+{
+
+}
+
+void updateState()
+{
+
+}
+
+void intialisingBeeps() 
+{
+
+}
+
+void foundLineBeep() 
+{
+
+}
 
 void beginLogging()
 {

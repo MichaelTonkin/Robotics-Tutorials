@@ -4,13 +4,12 @@
 #ifndef _LINESENSOR_H
 #define _LINESENSOR_H
 
-
 # define LSEN_LEFT_IN_PIN A0
 # define LSEN_CENTRE_IN_PIN A2
 # define LSEN_RIGHT_IN_PIN A3
 # define EMIT 11
 # define MAX_LSEN_PIN 3
-# define LINE_SENSOR_UPDATE 100
+# define LINE_SENSOR_UPDATE 10
 # define MOTOR_UPDATE 2000
 # define SECONDS 1000
 # define GAIN 10
@@ -31,8 +30,8 @@ class LineSensor_c {
   int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
   unsigned long ls_ts = 0;
   unsigned long sensor_outputs[MAX_LSEN_PIN];
-  static const int sample_size = 100;
-  unsigned long samples[MAX_LSEN_PIN][sample_size];
+  static const int SAMPLE_SIZE = 100;
+  unsigned long samples[MAX_LSEN_PIN][SAMPLE_SIZE];
 
 LineSensor_c() {
 
@@ -44,7 +43,53 @@ void initialize()
   motors.initialise();
   motors.setSpeed(10);
   calibrate(SENSOR_R);
-  calibrate(SENSOR_L);  
+  calibrate(SENSOR_L); 
+  calibrate(SENSOR_C);  
+}
+
+void controller()
+{
+  unsigned long tape[MAX_LSEN_PIN];
+  tape[SENSOR_L] = samples[SENSOR_L][SAMPLE_SIZE-25]; 
+  tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-25]; 
+  tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-25]; 
+  bool notOnTape = sensor_outputs[SENSOR_C] < tape[SENSOR_C];
+  
+
+
+  //TODO if centre is on tape move forward
+  //OTherwise turn
+  //IF right touches line at all then turn right
+  //same with left
+    //right sensor is higher than left sensor move left
+  if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
+  {
+    motors.turnLeft();
+  }
+  else if(sensorIsOnTape(SENSOR_R, tape[SENSOR_R]))
+  {
+    motors.turnRight();
+  }
+  else if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C])) //TODO if none of them are on the tape
+  {
+    motors.moveForward();
+  }
+  
+}
+
+bool sensorIsOnTape(int sensor, unsigned long tape)
+{
+  return sensor_outputs[sensor] > tape;
+}
+
+void findLine()
+{
+  
+}
+
+bool foundLine()
+{
+  return false;
 }
 
 void calibrate(int sensor)
@@ -54,7 +99,7 @@ void calibrate(int sensor)
   unsigned long target_time = target_time_modi + millis();
   int count = 0;
 
-  while(count < sample_size)
+  while(count < SAMPLE_SIZE)
   {
     motors.turnLeft();// test printing the sensor output
     lineSensorLoop();
@@ -63,7 +108,7 @@ void calibrate(int sensor)
       if (samples[sensor][99] == 0)
       {
         samples[sensor][count] = sensor_outputs[sensor];
-        Serial.println(samples[sensor][count]);
+        //Serial.println(samples[sensor][count]);
         count+=1;
       } 
       else
@@ -75,8 +120,8 @@ void calibrate(int sensor)
     }
   }
 
-  insertionSort(samples[sensor], sample_size);
-  printArray(samples[sensor], sample_size);
+  insertionSort(samples[sensor], SAMPLE_SIZE);
+  //printArray(samples[sensor], SAMPLE_SIZE);
 }
 
 //don't update start time until this function returns true
@@ -123,7 +168,7 @@ void printArray(unsigned long array[], int n)
 
 unsigned long getMaxSenValue(int sensor)
 {
-  return samples[sensor][sample_size - 1];
+  return samples[sensor][SAMPLE_SIZE - 1];
 }
 
 unsigned long getMinSenValue(int sensor)
@@ -220,6 +265,11 @@ float getLineError()
   unsigned long lsen_centre = sensor_outputs[1];
   unsigned long lsen_right = sensor_outputs[2];
   unsigned long lsen_sum;
+
+  //Serial.println(sensor_outputs[0]);
+  //Serial.println(sensor_outputs[1]);
+  //Serial.println(sensor_outputs[2]);
+
   // Sum ground sensor activation
   lsen_sum = lsen_left + lsen_centre + lsen_right;
   
@@ -228,15 +278,14 @@ float getLineError()
 
   // Normalise individual sensor readings 
   // against sum
-  w_left =  (w_left - (getMinSenValue(SENSOR_L))) / (getMaxSenValue(SENSOR_L) - getMinSenValue(SENSOR_L)) ;
-  w_right =  (w_right - (getMinSenValue(SENSOR_R))) / (getMaxSenValue(SENSOR_R) - getMinSenValue(SENSOR_R)) ;
+  w_left =  (lsen_left - (getMinSenValue(SENSOR_L))) / (getMaxSenValue(SENSOR_L) - getMinSenValue(SENSOR_L)) ;
+  w_right =  (lsen_right - (getMinSenValue(SENSOR_R))) / (getMaxSenValue(SENSOR_R) - getMinSenValue(SENSOR_R)) ;
   // Calculated error signal
   e_line  = w_left - w_right;
-  Serial.println("line error");
-  Serial.println(e_line);
+  //Serial.println("line error");
+  //Serial.println(e_line);
 
   speedGainFunc(e_line);
-  
   // Return result
   return e_line;
 
