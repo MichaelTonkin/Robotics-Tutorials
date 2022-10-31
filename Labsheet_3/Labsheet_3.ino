@@ -1,7 +1,7 @@
 
 #include "motors.h"
 #include "linesensor.h"
-#include "encoders.h"
+#include "kinematics.h"
 
 # define STATE_INITIAL 0
 # define STATE_JOIN_LINE 1
@@ -13,6 +13,7 @@
 # define RED_LED 17
 
 LineSensor_c linesensor;
+Kinematics_c kinematics;
 int state;
 
 void setup() 
@@ -25,18 +26,18 @@ void setup()
   pinMode(YELLOW_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
 
-  setupEncoder0();
-  setupEncoder1();
+  kinematics.initialize();
+
   state = STATE_INITIAL;
   delay(1000);
 }
 
 void loop() 
 {
-  linesensor.motors.moveForward();
-  //linesensor.lineSensorLoop();
-  //updateState(); 
-  //selectState();
+  linesensor.lineSensorLoop();
+  updateState(); 
+  selectState();
+  kinematics.update();
 }
 
 bool complete;

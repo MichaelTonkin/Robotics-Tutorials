@@ -162,7 +162,6 @@ ISR( PCINT0_vect ) {
     {
       count_el = count_el - 1;
     } 
-    Serial.println(count_el);
     // Shift the current readings (bits 3 and 2) down
     // into position 1 and 0 (to become prior readings)
     // This bumps bits 1 and 0 off to the right, "deleting"
