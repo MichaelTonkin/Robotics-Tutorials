@@ -51,9 +51,9 @@ void initialize()
   calibrate(SENSOR_L); 
   calibrate(SENSOR_C); 
   
-  tape[SENSOR_L] = samples[SENSOR_L][SAMPLE_SIZE-25]; 
-  tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-25]; 
-  tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-25]; 
+  tape[SENSOR_L] = samples[SENSOR_L][SAMPLE_SIZE-40]; 
+  tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-40]; 
+  tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-40]; 
 
   initComplete = true;
   delay(3000);
@@ -64,7 +64,7 @@ bool getInitComplete()
   return initComplete;
 }
 
-void controller()
+/*void controller()
 {
   
   if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
@@ -80,22 +80,23 @@ void controller()
     //motors.moveForward();
   }
   
-}
+}*/
 
 void followLine()
 {
-  if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
+  if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C]))
   {
-    motors.turnLeft();
+    motors.moveForward();
   }
   else if(sensorIsOnTape(SENSOR_R, tape[SENSOR_R]))
   {
     motors.turnRight();
   }
-  else if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C])) //TODO if none of them are on the tape
+  else if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L])) //TODO if none of them are on the tape
   {
-    motors.moveForward();
+    motors.turnLeft();
   }
+
 }
 
 bool sensorIsOnTape(int sensor, unsigned long tape)
@@ -383,6 +384,7 @@ void printElapsedTime(unsigned long elapsed_time[])
     Serial.print(i);
     Serial.print(" ");
     Serial.println( elapsed_time[i] );
+    Serial.println(tape[SENSOR_C]);
   }
   Serial.print("\n");
 }

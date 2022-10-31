@@ -1,6 +1,7 @@
 
 #include "motors.h"
 #include "linesensor.h"
+#include "encoders.h"
 
 # define STATE_INITIAL 0
 # define STATE_JOIN_LINE 1
@@ -19,16 +20,23 @@ void setup()
   Serial.begin(4800);
   delay(1000);
   Serial.println("It has begin...");
-  delay(1000);
+
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(YELLOW_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  setupEncoder0();
+  setupEncoder1();
   state = STATE_INITIAL;
+  delay(1000);
 }
 
 void loop() 
 {
-  linesensor.lineSensorLoop();
-  linesensor.controller();
-  updateState(); 
-  selectState();
+  linesensor.motors.moveForward();
+  //linesensor.lineSensorLoop();
+  //updateState(); 
+  //selectState();
 }
 
 bool complete;
@@ -41,7 +49,6 @@ void updateState()
   }
   else if (state == STATE_JOIN_LINE)
   {
-    state = STATE_JOIN_LINE;
     if (linesensor.getCentreLSenIsOnTape())
     {state = STATE_FOUND_LINE;}
   }
@@ -97,7 +104,7 @@ void foundLineBeeps()
   digitalWrite( GREEN_LED, HIGH );
   digitalWrite( RED_LED, HIGH );
   digitalWrite( YELLOW_LED, HIGH );
-  delay(1000);
+  delay(4000);
 }
 
 void followLine()
