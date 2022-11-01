@@ -9,7 +9,7 @@
 // Class to track robot position.
 class Kinematics_c {
   private:
-  const int HALF_X_ROTA = 170; //half a wheel rotation approximately 5cm
+  const int HALF_X_ROTA = 178; //half a wheel rotation approximately 5cm
   const int FULL_X_ROTA = HALF_X_ROTA * 2;
   const int THETA_ROTA = 1000;
 
@@ -38,8 +38,6 @@ class Kinematics_c {
     // your kinematics
     void update() 
     {
-      //if one motor is increasing and the other is stable or decreasing, we are doing rotation
-      //otherwise we are doing forward motion
       if (isBotRotating())
       {
         updateTheta();
@@ -52,10 +50,6 @@ class Kinematics_c {
 
     void updateTheta()
     {
-       //if rotating right
-      //theta ++
-       //else if rotating left
-       //theta --
       if(theta_direction == 1)
       {
         theta += 1;
@@ -120,6 +114,11 @@ class Kinematics_c {
   int getTheta()
   {
     return theta;
+  }
+
+  void resetDistanceX()
+  {
+    distance_x = 0;
   }
 };
 

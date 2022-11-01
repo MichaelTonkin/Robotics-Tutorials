@@ -38,7 +38,7 @@ void loop()
   updateState(); 
   selectState();*/
   kinematics.update();
-  if(kinematics.getTheta() < 250)
+  if(kinematics.getTheta() < 360)
   {
     linesensor.motors.turnRight();
   }
