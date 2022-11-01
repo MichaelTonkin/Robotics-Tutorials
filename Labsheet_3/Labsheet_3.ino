@@ -2,6 +2,7 @@
 #include "motors.h"
 #include "linesensor.h"
 #include "kinematics.h"
+#include "pid.h"
 
 # define STATE_INITIAL 0
 # define STATE_JOIN_LINE 1
@@ -14,6 +15,7 @@
 
 LineSensor_c linesensor;
 Kinematics_c kinematics;
+PID_c pid;
 int state;
 
 void setup() 
@@ -27,7 +29,7 @@ void setup()
   pinMode(RED_LED, OUTPUT);
 
   kinematics.initialize();
-
+  pid.initialize();
   state = STATE_INITIAL;
   delay(1000);
 }
@@ -37,11 +39,8 @@ void loop()
   /*linesensor.lineSensorLoop();
   updateState(); 
   selectState();*/
+  pid.update();
   kinematics.update();
-  if(kinematics.getTheta() < 250)
-  {
-    linesensor.motors.turnRight();
-  }
 }
 
 bool complete;
