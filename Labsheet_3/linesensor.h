@@ -47,13 +47,17 @@ void initialize()
   enableLineSensors();
   motors.initialise();
   motors.setSpeed(10);
-  calibrate(SENSOR_R);
+  /*calibrate(SENSOR_R);
   calibrate(SENSOR_L); 
   calibrate(SENSOR_C); 
   
   tape[SENSOR_L] = samples[SENSOR_L][SAMPLE_SIZE-40]; 
   tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-40]; 
-  tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-40]; 
+  tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-40]; */
+
+  tape[SENSOR_L] = 6000;   
+  tape[SENSOR_C] = 6000; 
+  tape[SENSOR_R] = 6000;
 
   initComplete = true;
   delay(3000);
@@ -95,6 +99,10 @@ void followLine()
   else if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L])) //TODO if none of them are on the tape
   {
     motors.turnLeft();
+  }
+  else
+  {
+    motors.turnRight();
   }
 
 }

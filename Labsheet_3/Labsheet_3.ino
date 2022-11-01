@@ -105,7 +105,7 @@ void foundLineBeeps()
   digitalWrite( GREEN_LED, HIGH );
   digitalWrite( RED_LED, HIGH );
   digitalWrite( YELLOW_LED, HIGH );
-  delay(4000);
+  //delay(4000);
 }
 
 void followLine()
