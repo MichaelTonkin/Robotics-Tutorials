@@ -18,7 +18,8 @@ class Kinematics_c {
   int distance_y = 0;
 
   int theta;
-  
+  int theta_direction;
+
   public:
   
     // Constructor, must exist.
@@ -27,7 +28,8 @@ class Kinematics_c {
     } 
 
     void initialize()
-    {    
+    { 
+      theta = 0;
       setupEncoder0();
       setupEncoder1();
     }
@@ -46,12 +48,28 @@ class Kinematics_c {
       {
         updateDistanceX();
       }
-      //boundCountE();
     }
 
     void updateTheta()
     {
-       
+       //if rotating right
+      //theta ++
+       //else if rotating left
+       //theta --
+      if(theta_direction == 1)
+      {
+        theta += 1;
+        Serial.println(theta);
+      }
+      else if (theta_direction == -1)
+      {
+        theta -= 1;
+        Serial.println(theta);
+      }
+      else
+      {
+        theta += 0;
+      }
     }
 
     //measure distance travelled
@@ -74,18 +92,18 @@ class Kinematics_c {
     int last_er = 0;
     bool isBotRotating()
     {
-      if (count_er > last_er && count_el < last_el)
+      if (count_er > last_er && count_el < last_el) //left
       {
         last_el = count_el;
         last_er = count_er;
-        Serial.println("turning left");
+        theta_direction = -1;
         return true;
       } 
-      else if (count_el > last_el && count_er < last_er)
+      else if (count_el > last_el && count_er < last_er) //right
       {
         last_el = count_el;
         last_er = count_er;
-        Serial.println("turning right");
+        theta_direction = +1;
         return true;
       }     
       else
@@ -94,6 +112,15 @@ class Kinematics_c {
       }
     }
 
+  int getDistanceX()
+  {
+    return distance_x;
+  }
+
+  int getTheta()
+  {
+    return theta;
+  }
 };
 
 /*

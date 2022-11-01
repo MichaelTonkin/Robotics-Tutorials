@@ -34,10 +34,14 @@ void setup()
 
 void loop() 
 {
-  linesensor.lineSensorLoop();
+  /*linesensor.lineSensorLoop();
   updateState(); 
-  selectState();
+  selectState();*/
   kinematics.update();
+  if(kinematics.getTheta() < 250)
+  {
+    linesensor.motors.turnRight();
+  }
 }
 
 bool complete;
