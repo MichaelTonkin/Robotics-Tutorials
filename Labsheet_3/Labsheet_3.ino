@@ -40,9 +40,9 @@ void loop()
 
 bool complete;
 
+bool return_home = false;
 void updateState()
 {
-  Serial.println(state);
   if (state == STATE_INITIAL && linesensor.getInitComplete())
   {
     state = STATE_JOIN_LINE;
@@ -68,6 +68,10 @@ void updateState()
     if(linesensor.foundLine())
     {
       state = STATE_FOUND_LINE;
+    }
+    else if (return_home == true)
+    {
+      state = STATE_STOP;
     }
   }
 }
@@ -96,7 +100,10 @@ if( state == STATE_INITIAL ) {
   }
   else if (state == STATE_LOST_LINE)
   {
-    linesensor.findLine();
+    if(linesensor.findLine() == 2)
+    {
+      return_home = true;
+    }
   }
   else {
 

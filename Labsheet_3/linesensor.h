@@ -51,7 +51,7 @@ void initialize()
   debug = true;
   enableLineSensors();
   motors.initialise();
-  motors.setSpeed(100);
+  motors.setSpeed(200);
   /*calibrate(SENSOR_R);
   calibrate(SENSOR_L); 
   calibrate(SENSOR_C); 
@@ -60,7 +60,7 @@ void initialize()
   tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-40]; 
   tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-40]; */
 
-  int threshold = 3000;
+  int threshold = 3400;
 
   tape[SENSOR_L] = threshold;   
   tape[SENSOR_C] = threshold; 
@@ -96,7 +96,7 @@ bool getInitComplete()
 }*/
 
 int find_line_call = 0;
-void findLine()
+int findLine()
 {
   if(find_line_call == 0)
   {
@@ -104,17 +104,19 @@ void findLine()
     find_line_call = 1;
   }
 
-  if(kinematics.getDistanceX() < 10)
+  if(kinematics.getDistanceX() <= 2)
   {
-  motors.moveForward();
-  if (foundLine())
-  {
-    return true;
+    motors.moveForward();
+    if (foundLine())
+    {
+      find_line_call = 0;
+      return 1;
+    }
   }
-  }
-  else
+  else if (kinematics.getDistanceX() > 2)
   {
-    find_line_call = 0;
+    //time to go home
+    return 2;
   }
 }
 

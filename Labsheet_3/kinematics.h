@@ -97,7 +97,6 @@ class Kinematics_c {
     void updateDistanceX()
     {
       int new_x;
-
       new_x = starting_x - ((count_er + count_el) / 2);
 
       if (new_x <= 0)
