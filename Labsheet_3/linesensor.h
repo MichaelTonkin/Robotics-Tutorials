@@ -113,7 +113,7 @@ int findLine()
       return 1;
     }
   }
-  else if (kinematics.getDistanceX() > 2)
+  else if (kinematics.getDistanceX() > 3)
   {
     //time to go home
     return 2;
@@ -138,6 +138,26 @@ void followLine()
   {
     motors.turnLeft();
   }
+}
+
+bool return_started = false;
+void returnHome()
+{
+  if(return_started == false)
+  {
+    kinematics.resetKinematics();
+    return_started = true;
+  }
+  int theta;
+  theta = kinematics.getTheta();
+  if(theta < 40)
+  {
+    motors.turnRight();
+  }
+  else if (kinematics.getDistanceX() < 19)
+  {
+    motors.moveForward();
+  }  
 }
 
 void joinLine()

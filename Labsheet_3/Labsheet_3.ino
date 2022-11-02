@@ -9,6 +9,7 @@
 # define STATE_FOLLOW_LINE 4
 # define STATE_LOST_LINE 5
 # define STATE_STOP 6
+# define STATE_RETURN_HOME 7
 
 # define GREEN_LED 30
 # define YELLOW_LED 13
@@ -39,7 +40,7 @@ void loop()
 }
 
 bool complete;
-
+bool end_of_line = false;
 bool return_home = false;
 void updateState()
 {
@@ -70,10 +71,14 @@ void updateState()
     {
       state = STATE_FOUND_LINE;
     }
-    else if (return_home == true)
+    else if (end_of_line == true)
     {
       state = STATE_STOP;
     }
+  }
+  else if (return_home)
+  {
+    state = STATE_RETURN_HOME;
   }
 }
 
@@ -103,8 +108,12 @@ if( state == STATE_INITIAL ) {
   {
     if(linesensor.findLine() == 2)
     {
-      return_home = true;
+      end_of_line = true;
     }
+  }
+  else if (state == STATE_RETURN_HOME)
+  {
+    linesensor.returnHome();
   }
   else {
 
@@ -135,7 +144,8 @@ void followLine()
 
 void stopRobot()
 {
-
+  delay(3000);
+  return_home = true;
 }
 
 void signalError()
