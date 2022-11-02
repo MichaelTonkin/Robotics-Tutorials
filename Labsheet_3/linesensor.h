@@ -28,6 +28,7 @@ class LineSensor_c {
   bool leftIsOnTape;
   bool rightIsOnTape;
   bool initComplete;
+  bool debug;
   public:
   
   Motors_c motors;
@@ -47,6 +48,7 @@ LineSensor_c() {
 
 void initialize()
 {
+  debug = true;
   enableLineSensors();
   motors.initialise();
   motors.setSpeed(100);
@@ -58,7 +60,7 @@ void initialize()
   tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-40]; 
   tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-40]; */
 
-  int threshold = 4000;
+  int threshold = 3000;
 
   tape[SENSOR_L] = threshold;   
   tape[SENSOR_C] = threshold; 
@@ -93,43 +95,26 @@ bool getInitComplete()
   
 }*/
 
-int attempt = 0;
+int find_line_call = 0;
 void findLine()
 {
-  /*
-  TODO reset theta after certain amount
-  */
-  int theta;
-
-  if(attempt == 0)
+  if(find_line_call == 0)
   {
-    kinematics.resetRotationVals();
-    attempt += 1;
+    kinematics.resetKinematics();
+    find_line_call = 1;
   }
 
-  theta = kinematics.getTheta();
-  
-  if(foundLine())
+  if(kinematics.getDistanceX() < 10)
   {
-    attempt = 0;
-    return;
-  }  
-  else if(theta < 50 && attempt == 1)
+  motors.moveForward();
+  if (foundLine())
   {
-    motors.turnRight();
+    return true;
   }
-  else if(theta > 50 && attempt == 1)
-  { 
-    attempt = 2;
   }
-  else if(theta > -50 && attempt == 2)
+  else
   {
-    motors.turnLeft();
-  }
-  else if (theta < -50 && attempt == 2)
-  {
-    //gap state
-    motors.moveForward();
+    find_line_call = 0;
   }
 }
 
@@ -343,8 +328,8 @@ void countTime()
       remaining = 0;
     }
   }
-  
-  //printElapsedTime(sensor_outputs);
+  if(debug)
+    printElapsedTime(sensor_outputs);
 }
 
 void lineDetector()
@@ -466,6 +451,46 @@ bool pinIsHigh()
   return false;
 }
 
+/*int attempt = 0;
+void findLine()
+{
+  /*
+  TODO reset theta after certain amount
+  
+  int theta;
+
+  if(attempt == 0)
+  {
+    kinematics.resetRotationVals();
+    attempt += 1;
+  }
+
+  theta = kinematics.getTheta();
+  
+  if(foundLine())
+  {
+    attempt = 0;
+    return;
+  }  
+  else if(theta < 50 && attempt == 1)
+  {
+    motors.turnRight();
+  }
+  else if(theta > 50 && attempt == 1)
+  { 
+    attempt = 2;
+  }
+  else if(theta > -50 && attempt == 2)
+  {
+    motors.turnLeft();
+  }
+  else if (theta < -50 && attempt == 2)
+  {
+    //gap state
+    motors.moveForward();
+  }
+}
+*/
 };
 
 

@@ -84,6 +84,14 @@ class Kinematics_c {
       theta = new_theta;
     }
 
+    void resetKinematics()
+    {
+      count_er = 0;
+      count_el = 0;
+      theta = 0;
+      distance_x = 0;
+    }
+
     //measure distance travelled
     int starting_x = HALF_X_ROTA;
     void updateDistanceX()

@@ -42,6 +42,7 @@ bool complete;
 
 void updateState()
 {
+  Serial.println(state);
   if (state == STATE_INITIAL && linesensor.getInitComplete())
   {
     state = STATE_JOIN_LINE;
