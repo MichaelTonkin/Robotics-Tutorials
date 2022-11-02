@@ -106,16 +106,18 @@ void moveLeft(int dir)
   setMotorDir(L_PWM_PIN, dir);
   
   setMotorPower(L_PWM_PIN, 130);
-  if(!motorPause())
-    setMotorPower(L_PWM_PIN, 0);
+  motorPause();
+  setMotorPower(L_PWM_PIN, 0);
+  motorPause();
 }
 
 void moveRight(int dir)
 {
   setMotorDir(R_PWM_PIN, dir);
   setMotorPower(R_PWM_PIN, 130);
-  if(!motorPause())
-    setMotorPower(R_PWM_PIN, 0);
+  motorPause();
+  setMotorPower(R_PWM_PIN, 0);
+  motorPause();
 }
 
 void setMotorPower( int pin, float power )
