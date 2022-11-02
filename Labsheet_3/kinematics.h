@@ -19,6 +19,7 @@ class Kinematics_c {
 
   int theta;
   int theta_direction;
+  float r;
 
   public:
   
@@ -29,6 +30,7 @@ class Kinematics_c {
 
     void initialize()
     { 
+      r = 4.5;
       theta = 0;
       setupEncoder0();
       setupEncoder1();
@@ -50,8 +52,12 @@ class Kinematics_c {
 
     void updateTheta()
     {
+      
+      //theta = theta + ((count_el - count_er) / r);
+      //Serial.println(theta);     
       if(theta_direction == 1)
       {
+        // r =  4.5
         theta += 1;
         Serial.println(theta);
       }
@@ -64,6 +70,18 @@ class Kinematics_c {
       {
         theta += 0;
       }
+    }
+
+    void resetRotationVals()
+    {
+      theta = 0;
+      count_er = 0;
+      count_el = 0;
+    }
+
+    void setTheta(int new_theta)
+    {
+      theta = new_theta;
     }
 
     //measure distance travelled

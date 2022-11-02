@@ -7,13 +7,14 @@
 # define STATE_JOIN_LINE 1
 # define STATE_FOUND_LINE 2
 # define STATE_FOLLOW_LINE 4
-# define STATE_STOP 5
+# define STATE_LOST_LINE 5
+# define STATE_STOP 6
+
 # define GREEN_LED 30
 # define YELLOW_LED 13
 # define RED_LED 17
 
 LineSensor_c linesensor;
-Kinematics_c kinematics;
 int state;
 
 void setup() 
@@ -26,22 +27,15 @@ void setup()
   pinMode(YELLOW_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
 
-  kinematics.initialize();
-
   state = STATE_INITIAL;
   delay(1000);
 }
 
 void loop() 
 {
-  /*linesensor.lineSensorLoop();
   updateState(); 
-  selectState();*/
-  kinematics.update();
-  if(kinematics.getTheta() < 360)
-  {
-    linesensor.motors.turnRight();
-  }
+  selectState();
+  linesensor.lineSensorLoop();
 }
 
 bool complete;
@@ -54,12 +48,26 @@ void updateState()
   }
   else if (state == STATE_JOIN_LINE)
   {
-    if (linesensor.getCentreLSenIsOnTape())
-    {state = STATE_FOUND_LINE;}
+    if (linesensor.foundLine())
+    {
+      state = STATE_FOUND_LINE;
+    }
+  }
+  else if (state == STATE_FOLLOW_LINE && (linesensor.foundLine() == 0))
+  {
+    state = STATE_LOST_LINE;
   }
   else if (state == STATE_FOUND_LINE)
   {
-    state = STATE_FOLLOW_LINE;
+    if(linesensor.faceLine())
+      state = STATE_FOLLOW_LINE;
+  }
+  else if (state == STATE_LOST_LINE)
+  {
+    if(linesensor.foundLine())
+    {
+      state = STATE_FOUND_LINE;
+    }
   }
 }
 
@@ -72,7 +80,7 @@ if( state == STATE_INITIAL ) {
 
   } else if( state == STATE_JOIN_LINE ) {
 
-    driveForwards();
+    linesensor.joinLine();
         
   } else if( state == STATE_FOUND_LINE ) {
     foundLineBeeps();
@@ -84,6 +92,10 @@ if( state == STATE_INITIAL ) {
   else if (state == STATE_FOLLOW_LINE)
   {
     followLine();
+  }
+  else if (state == STATE_LOST_LINE)
+  {
+    linesensor.findLine();
   }
   else {
 
@@ -97,11 +109,6 @@ if( state == STATE_INITIAL ) {
     signalError();
   }
   
-}
-
-void driveForwards()
-{
-  linesensor.motors.moveForward(); 
 }
 
 void foundLineBeeps()
