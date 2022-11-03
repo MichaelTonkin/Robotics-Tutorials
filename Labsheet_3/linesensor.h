@@ -104,7 +104,7 @@ int findLine()
     find_line_call = 1;
   }
 
-  if(kinematics.getDistanceX() <= 3)
+  if(kinematics.getDistanceX() <= 4)
   {
     motors.moveForward();
     if (foundLine())
@@ -113,7 +113,7 @@ int findLine()
       return 1;
     }
   }
-  else if (kinematics.getDistanceX() > 3)
+  else if (kinematics.getDistanceX() > 4)
   {
     //time to go home
     return 2;
@@ -141,23 +141,41 @@ void followLine()
 }
 
 bool return_started = false;
+bool turned = 0;
 void returnHome()
 {
+  int theta;
+  int target_theta;
+  target_theta = 51;
   if(return_started == false)
   {
     kinematics.resetKinematics();
     return_started = true;
   }
-  int theta;
   theta = kinematics.getTheta();
-  if(theta < 40)
+  if(theta < target_theta && turned == 0)
   {
     motors.turnRight();
   }
-  else if (kinematics.getDistanceX() < 19)
+  if (theta >= target_theta)
+  {
+    turned = 1;
+  }
+  if (kinematics.getDistanceX() <= 16 && turned == 1)
   {
     motors.moveForward();
   }  
+  else if (kinematics.getDistanceX() >= 16 && kinematics.getDistanceX() < 19)
+  {
+    if(foundLine())
+    {
+      motors.turnLeft();
+    }
+    else
+    {
+      motors.moveForward();
+    }
+  }
 }
 
 void joinLine()
@@ -167,7 +185,7 @@ void joinLine()
 
 bool faceLine()
 {
-  if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
+  if(foundLine())
   {
     return true;
   }

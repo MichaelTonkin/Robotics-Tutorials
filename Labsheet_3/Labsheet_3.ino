@@ -45,7 +45,11 @@ bool return_home = false;
 void updateState()
 {
   Serial.println(state);
-  if (state == STATE_INITIAL && linesensor.getInitComplete())
+  if (return_home)
+  {
+    state = STATE_RETURN_HOME;
+  }
+  else if (state == STATE_INITIAL && linesensor.getInitComplete())
   {
     state = STATE_JOIN_LINE;
   }
@@ -76,10 +80,7 @@ void updateState()
       state = STATE_STOP;
     }
   }
-  else if (return_home)
-  {
-    state = STATE_RETURN_HOME;
-  }
+
 }
 
 void selectState()
