@@ -23,7 +23,6 @@ void setup()
   Serial.begin(4800);
   delay(1000);
   Serial.println("It has begin...");
-
   pinMode(GREEN_LED, OUTPUT);
   pinMode(YELLOW_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
@@ -44,7 +43,7 @@ bool end_of_line = false;
 bool return_home = false;
 void updateState()
 {
-  Serial.println(state);
+  Serial.print("");
   if (return_home)
   {
     state = STATE_RETURN_HOME;
@@ -55,7 +54,7 @@ void updateState()
   }
   else if (state == STATE_JOIN_LINE)
   {
-    if (linesensor.foundLine())
+    if (linesensor.foundLine() && linesensor.joined == true)
     {
       state = STATE_FOUND_LINE;
     }

@@ -60,7 +60,7 @@ void initialize()
   tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-40]; 
   tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-40]; */
 
-  int threshold = 3000;
+  int threshold = 2000;
 
   tape[SENSOR_L] = threshold;   
   tape[SENSOR_C] = threshold; 
@@ -104,7 +104,7 @@ int findLine()
     find_line_call = 1;
   }
 
-  if(kinematics.getDistanceX() <= 4)
+  if(kinematics.getDistanceX() <= 5)
   {
     motors.moveForward();
     if (foundLine())
@@ -113,7 +113,7 @@ int findLine()
       return 1;
     }
   }
-  else if (kinematics.getDistanceX() > 4)
+  else if (kinematics.getDistanceX() > 5)
   {
     //time to go home
     return 2;
@@ -146,7 +146,7 @@ void returnHome()
 {
   int theta;
   int target_theta;
-  target_theta = 51;
+  target_theta = 55;
   if(return_started == false)
   {
     kinematics.resetKinematics();
@@ -161,15 +161,15 @@ void returnHome()
   {
     turned = 1;
   }
-  if (kinematics.getDistanceX() <= 16 && turned == 1)
+  if (kinematics.getDistanceX() <= 15 && turned == 1)
   {
     motors.moveForward();
   }  
-  else if (kinematics.getDistanceX() >= 16 && kinematics.getDistanceX() < 19)
+  else if (kinematics.getDistanceX() >= 15 && kinematics.getDistanceX() < 19)
   {
     if(foundLine())
     {
-      motors.turnLeft();
+      motors.turnRight();
     }
     else
     {
@@ -178,9 +178,20 @@ void returnHome()
   }
 }
 
+int join_loop = 0;
+bool joined = false;
 void joinLine()
 {
   motors.moveForward();
+  if(foundLine() && join_loop < 20)
+  {
+    motors.turnLeft();
+    join_loop += 1;
+  }
+  else if(foundLine() && join_loop >= 20)
+  {
+    joined = true;
+  }
 }
 
 bool faceLine()
