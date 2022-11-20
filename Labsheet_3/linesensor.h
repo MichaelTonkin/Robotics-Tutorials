@@ -4,6 +4,8 @@
 #ifndef _LINESENSOR_H
 #define _LINESENSOR_H
 
+#include "Kinematics.h"
+
 # define LSEN_LEFT_IN_PIN A0
 # define LSEN_CENTRE_IN_PIN A2
 # define LSEN_RIGHT_IN_PIN A3
@@ -26,9 +28,11 @@ class LineSensor_c {
   bool leftIsOnTape;
   bool rightIsOnTape;
   bool initComplete;
+  bool debug;
   public:
   
   Motors_c motors;
+  Kinematics_c kinematics;
 
   int lsen_pin[MAX_LSEN_PIN] = {LSEN_LEFT_IN_PIN, LSEN_CENTRE_IN_PIN, LSEN_RIGHT_IN_PIN};
   unsigned long ls_ts = 0;
@@ -44,9 +48,10 @@ LineSensor_c() {
 
 void initialize()
 {
+  debug = true;
   enableLineSensors();
   motors.initialise();
-  motors.setSpeed(10);
+  motors.setSpeed(100);
   /*calibrate(SENSOR_R);
   calibrate(SENSOR_L); 
   calibrate(SENSOR_C); 
@@ -55,12 +60,16 @@ void initialize()
   tape[SENSOR_C] = samples[SENSOR_C][SAMPLE_SIZE-40]; 
   tape[SENSOR_R] = samples[SENSOR_R][SAMPLE_SIZE-40]; */
 
-  tape[SENSOR_L] = 6000;   
-  tape[SENSOR_C] = 6000; 
-  tape[SENSOR_R] = 6000;
+  int threshold = 2000;
 
+  tape[SENSOR_L] = threshold;   
+  tape[SENSOR_C] = threshold; 
+  tape[SENSOR_R] = threshold;
+
+  kinematics.initialize();
+  
   initComplete = true;
-  delay(3000);
+  delay(1000);
 }
 
 bool getInitComplete()
@@ -86,25 +95,116 @@ bool getInitComplete()
   
 }*/
 
+int find_line_call = 0;
+int findLine()
+{
+  if(find_line_call == 0)
+  {
+    kinematics.resetKinematics();
+    find_line_call = 1;
+  }
+
+  if(kinematics.getDistanceX() <= 5)
+  {
+    motors.moveForward();
+    if (foundLine())
+    {
+      find_line_call = 0;
+      return 1;
+    }
+  }
+  else if (kinematics.getDistanceX() > 5)
+  {
+    //time to go home
+    return 2;
+  }
+}
+
 void followLine()
 {
   if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C]))
   {
     motors.moveForward();
   }
+  else if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
+  {
+    motors.turnLeft();
+  }
   else if(sensorIsOnTape(SENSOR_R, tape[SENSOR_R]))
   {
     motors.turnRight();
   }
-  else if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L])) //TODO if none of them are on the tape
+  else if (sensorIsOnTape(SENSOR_R, tape[SENSOR_R]) && sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
   {
     motors.turnLeft();
   }
-  else
+}
+
+bool return_started = false;
+bool turned = 0;
+void returnHome()
+{
+  int theta;
+  int target_theta;
+  target_theta = 55;
+  if(return_started == false)
+  {
+    kinematics.resetKinematics();
+    return_started = true;
+  }
+  theta = kinematics.getTheta();
+  if(theta < target_theta && turned == 0)
   {
     motors.turnRight();
   }
+  if (theta >= target_theta)
+  {
+    turned = 1;
+  }
+  if (kinematics.getDistanceX() <= 15 && turned == 1)
+  {
+    motors.moveForward();
+  }  
+  else if (kinematics.getDistanceX() >= 15 && kinematics.getDistanceX() < 19)
+  {
+    if(foundLine())
+    {
+      motors.turnRight();
+    }
+    else
+    {
+      motors.moveForward();
+    }
+  }
+}
 
+int join_loop = 0;
+bool joined = false;
+void joinLine()
+{
+  motors.moveForward();
+  if(foundLine() && join_loop < 20)
+  {
+    motors.turnLeft();
+    join_loop += 1;
+  }
+  else if(foundLine() && join_loop >= 20)
+  {
+    joined = true;
+  }
+}
+
+bool faceLine()
+{
+  if(foundLine())
+  {
+    return true;
+  }
+  else
+  {
+    motors.turnLeft();
+  }
+  return false;
 }
 
 bool sensorIsOnTape(int sensor, unsigned long tape)
@@ -124,14 +224,9 @@ bool getCentreLSenIsOnTape()
     return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]);
 }
 
-void findLine()
-{
-  
-}
-
 bool foundLine()
 {
-  return false;
+  return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]) || sensorIsOnTape(SENSOR_R, tape[SENSOR_R]) || sensorIsOnTape(SENSOR_L, tape[SENSOR_L]);
 }
 
 void calibrate(int sensor)
@@ -230,6 +325,7 @@ void lineSensorLoop()
       // Conduct a read of the line sensors
       countTime();
       lineDetector();
+      kinematics.update();
       // Record when this execution happened.
       // for future iterations of loop()
       ls_ts = millis();
@@ -283,8 +379,8 @@ void countTime()
       remaining = 0;
     }
   }
-  
-  printElapsedTime(sensor_outputs);
+  if(debug)
+    printElapsedTime(sensor_outputs);
 }
 
 void lineDetector()
@@ -406,6 +502,46 @@ bool pinIsHigh()
   return false;
 }
 
+/*int attempt = 0;
+void findLine()
+{
+  /*
+  TODO reset theta after certain amount
+  
+  int theta;
+
+  if(attempt == 0)
+  {
+    kinematics.resetRotationVals();
+    attempt += 1;
+  }
+
+  theta = kinematics.getTheta();
+  
+  if(foundLine())
+  {
+    attempt = 0;
+    return;
+  }  
+  else if(theta < 50 && attempt == 1)
+  {
+    motors.turnRight();
+  }
+  else if(theta > 50 && attempt == 1)
+  { 
+    attempt = 2;
+  }
+  else if(theta > -50 && attempt == 2)
+  {
+    motors.turnLeft();
+  }
+  else if (theta < -50 && attempt == 2)
+  {
+    //gap state
+    motors.moveForward();
+  }
+}
+*/
 };
 
 

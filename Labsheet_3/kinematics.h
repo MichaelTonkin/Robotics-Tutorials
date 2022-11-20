@@ -9,7 +9,7 @@
 // Class to track robot position.
 class Kinematics_c {
   private:
-  const int HALF_X_ROTA = 170; //half a wheel rotation approximately 5cm
+  const int HALF_X_ROTA = 178; //half a wheel rotation approximately 5cm
   const int FULL_X_ROTA = HALF_X_ROTA * 2;
   const int THETA_ROTA = 1000;
 
@@ -19,6 +19,7 @@ class Kinematics_c {
 
   int theta;
   int theta_direction;
+  float r;
 
   public:
   
@@ -29,6 +30,7 @@ class Kinematics_c {
 
     void initialize()
     { 
+      r = 4.5;
       theta = 0;
       setupEncoder0();
       setupEncoder1();
@@ -38,8 +40,7 @@ class Kinematics_c {
     // your kinematics
     void update() 
     {
-      //if one motor is increasing and the other is stable or decreasing, we are doing rotation
-      //otherwise we are doing forward motion
+      Serial.println(theta);
       if (isBotRotating())
       {
         updateTheta();
@@ -52,12 +53,12 @@ class Kinematics_c {
 
     void updateTheta()
     {
-       //if rotating right
-      //theta ++
-       //else if rotating left
-       //theta --
+      
+      //theta = theta + ((count_el - count_er) / r);
+      //Serial.println(theta);     
       if(theta_direction == 1)
       {
+        // r =  4.5
         theta += 1;
         Serial.println(theta);
       }
@@ -72,12 +73,31 @@ class Kinematics_c {
       }
     }
 
+    void resetRotationVals()
+    {
+      theta = 0;
+      count_er = 0;
+      count_el = 0;
+    }
+
+    void setTheta(int new_theta)
+    {
+      theta = new_theta;
+    }
+
+    void resetKinematics()
+    {
+      count_er = 0;
+      count_el = 0;
+      theta = 0;
+      distance_x = 0;
+    }
+
     //measure distance travelled
     int starting_x = HALF_X_ROTA;
     void updateDistanceX()
     {
       int new_x;
-
       new_x = starting_x - ((count_er + count_el) / 2);
 
       if (new_x <= 0)
@@ -120,6 +140,11 @@ class Kinematics_c {
   int getTheta()
   {
     return theta;
+  }
+
+  void resetDistanceX()
+  {
+    distance_x = 0;
   }
 };
 
