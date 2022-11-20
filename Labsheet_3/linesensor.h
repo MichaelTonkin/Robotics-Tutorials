@@ -19,18 +19,24 @@
 # define SENSOR_C 1
 # define SENSOR_R 2
 
-
-
 // Class to operate the linesensor(s).
 class LineSensor_c {
-  private:
+  public:
   bool centreIsOnTape;
   bool leftIsOnTape;
   bool rightIsOnTape;
   bool initComplete;
   bool debug;
-  public:
   
+  unsigned long left_min = 1370;
+  unsigned long left_max = 5700;
+  
+  unsigned long right_min = 1470;
+  unsigned long right_max = 5330;
+
+  unsigned long centre_min = 1280;
+  unsigned long centre_max = 5028;
+
   Motors_c motors;
   Kinematics_c kinematics;
 
@@ -38,7 +44,7 @@ class LineSensor_c {
   unsigned long ls_ts = 0;
   unsigned long sensor_outputs[MAX_LSEN_PIN];
   static const int SAMPLE_SIZE = 100;
-  unsigned long samples[MAX_LSEN_PIN][SAMPLE_SIZE];
+  //unsigned long samples[MAX_LSEN_PIN][SAMPLE_SIZE];
 
   unsigned long tape[MAX_LSEN_PIN];
 
@@ -48,10 +54,11 @@ LineSensor_c() {
 
 void initialize()
 {
-  debug = true;
+  debug = false;
   enableLineSensors();
   motors.initialise();
   motors.setSpeed(100);
+  motors.setPwm(63);
   /*calibrate(SENSOR_R);
   calibrate(SENSOR_L); 
   calibrate(SENSOR_C); 
@@ -77,159 +84,7 @@ bool getInitComplete()
   return initComplete;
 }
 
-/*void controller()
-{
-  
-  if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
-  {
-    //motors.turnLeft();
-  }
-  else if(sensorIsOnTape(SENSOR_R, tape[SENSOR_R]))
-  {
-    //motors.turnRight();
-  }
-  else if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C])) //TODO if none of them are on the tape
-  {
-    //motors.moveForward();
-  }
-  
-}*/
-
-int find_line_call = 0;
-int findLine()
-{
-  if(find_line_call == 0)
-  {
-    kinematics.resetKinematics();
-    find_line_call = 1;
-  }
-
-  if(kinematics.getDistanceX() <= 5)
-  {
-    motors.moveForward();
-    if (foundLine())
-    {
-      find_line_call = 0;
-      return 1;
-    }
-  }
-  else if (kinematics.getDistanceX() > 5)
-  {
-    //time to go home
-    return 2;
-  }
-}
-
-void followLine()
-{
-  if(sensorIsOnTape(SENSOR_C, tape[SENSOR_C]))
-  {
-    motors.moveForward();
-  }
-  else if(sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
-  {
-    motors.turnLeft();
-  }
-  else if(sensorIsOnTape(SENSOR_R, tape[SENSOR_R]))
-  {
-    motors.turnRight();
-  }
-  else if (sensorIsOnTape(SENSOR_R, tape[SENSOR_R]) && sensorIsOnTape(SENSOR_L, tape[SENSOR_L]))
-  {
-    motors.turnLeft();
-  }
-}
-
-bool return_started = false;
-bool turned = 0;
-void returnHome()
-{
-  int theta;
-  int target_theta;
-  target_theta = 55;
-  if(return_started == false)
-  {
-    kinematics.resetKinematics();
-    return_started = true;
-  }
-  theta = kinematics.getTheta();
-  if(theta < target_theta && turned == 0)
-  {
-    motors.turnRight();
-  }
-  if (theta >= target_theta)
-  {
-    turned = 1;
-  }
-  if (kinematics.getDistanceX() <= 15 && turned == 1)
-  {
-    motors.moveForward();
-  }  
-  else if (kinematics.getDistanceX() >= 15 && kinematics.getDistanceX() < 19)
-  {
-    if(foundLine())
-    {
-      motors.turnRight();
-    }
-    else
-    {
-      motors.moveForward();
-    }
-  }
-}
-
-int join_loop = 0;
-bool joined = false;
-void joinLine()
-{
-  motors.moveForward();
-  if(foundLine() && join_loop < 20)
-  {
-    motors.turnLeft();
-    join_loop += 1;
-  }
-  else if(foundLine() && join_loop >= 20)
-  {
-    joined = true;
-  }
-}
-
-bool faceLine()
-{
-  if(foundLine())
-  {
-    return true;
-  }
-  else
-  {
-    motors.turnLeft();
-  }
-  return false;
-}
-
-bool sensorIsOnTape(int sensor, unsigned long tape)
-{
-  if( sensor_outputs[sensor] > tape )
-  {
-    return true;
-  }  
-  else
-  {
-    return false;
-  }
-}
-
-bool getCentreLSenIsOnTape()
-{ 
-    return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]);
-}
-
-bool foundLine()
-{
-  return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]) || sensorIsOnTape(SENSOR_R, tape[SENSOR_R]) || sensorIsOnTape(SENSOR_L, tape[SENSOR_L]);
-}
-
-void calibrate(int sensor)
+/*void calibrate(int sensor)
 {
   unsigned long target_time_modi = 50;
   unsigned long start_time = millis();
@@ -259,7 +114,7 @@ void calibrate(int sensor)
 
   insertionSort(samples[sensor], SAMPLE_SIZE);
   //printArray(samples[sensor], SAMPLE_SIZE);
-}
+}*/
 
 //don't update start time until this function returns true
 bool timer(unsigned long target_time, unsigned long start_time)
@@ -303,7 +158,7 @@ void printArray(unsigned long array[], int n)
   }
 }
 
-unsigned long getMaxSenValue(int sensor)
+/*unsigned long getMaxSenValue(int sensor)
 {
   return samples[sensor][SAMPLE_SIZE - 1];
 }
@@ -311,7 +166,7 @@ unsigned long getMaxSenValue(int sensor)
 unsigned long getMinSenValue(int sensor)
 {
   return samples[sensor][0];
-}
+}*/
 
 void lineSensorLoop()
 {
@@ -324,8 +179,8 @@ void lineSensorLoop()
 
       // Conduct a read of the line sensors
       countTime();
-      lineDetector();
-      kinematics.update();
+      //lineDetector();
+      //kinematics.update();
       // Record when this execution happened.
       // for future iterations of loop()
       ls_ts = millis();
@@ -350,9 +205,6 @@ void countTime()
   unsigned long timeout = 5 * SECONDS;
   bool done = false;
   int remaining = MAX_LSEN_PIN;
-//new code needs to go here
-      //we need to charge each capacitor
-    //and reconfigure the sensor pins to be read again
   
   for(int i = 0; i < MAX_LSEN_PIN; i++)
   {
@@ -381,57 +233,6 @@ void countTime()
   }
   if(debug)
     printElapsedTime(sensor_outputs);
-}
-
-void lineDetector()
-{
-  float e_line;
-  e_line = getLineError(); 
-
-  float turn_pwm;
-  turn_pwm = 255;
-
-  turn_pwm = turn_pwm * e_line;
-}
-
-float getLineError() 
-{
-  float e_line;
-  float w_left;
-  float w_right;
-  unsigned long lsen_left = sensor_outputs[0];
-  unsigned long lsen_centre = sensor_outputs[1];
-  unsigned long lsen_right = sensor_outputs[2];
-  unsigned long lsen_sum;
-
-  //Serial.println(sensor_outputs[0]);
-  //Serial.println(sensor_outputs[1]);
-  //Serial.println(sensor_outputs[2]);
-
-  // Sum ground sensor activation
-  lsen_sum = lsen_left + lsen_centre + lsen_right;
-  
-  w_left = lsen_left + (lsen_centre * 0.5);
-  w_right = lsen_right + (lsen_centre * 0.5);
-
-  // Normalise individual sensor readings 
-  // against sum
-  w_left =  (lsen_left - (getMinSenValue(SENSOR_L))) / (getMaxSenValue(SENSOR_L) - getMinSenValue(SENSOR_L)) ;
-  w_right =  (lsen_right - (getMinSenValue(SENSOR_R))) / (getMaxSenValue(SENSOR_R) - getMinSenValue(SENSOR_R)) ;
-  // Calculated error signal
-  e_line  = w_left - w_right;
-  //Serial.println("line error");
-  //Serial.println(e_line);
-
-  speedGainFunc(e_line);
-  // Return result
-  return e_line;
-
-}
-
-float speedGainFunc(float e_line)
-{
-  return e_line * GAIN;
 }
 
 bool sensorIsUnread(unsigned long sensor)
@@ -501,47 +302,6 @@ bool pinIsHigh()
   }
   return false;
 }
-
-/*int attempt = 0;
-void findLine()
-{
-  /*
-  TODO reset theta after certain amount
-  
-  int theta;
-
-  if(attempt == 0)
-  {
-    kinematics.resetRotationVals();
-    attempt += 1;
-  }
-
-  theta = kinematics.getTheta();
-  
-  if(foundLine())
-  {
-    attempt = 0;
-    return;
-  }  
-  else if(theta < 50 && attempt == 1)
-  {
-    motors.turnRight();
-  }
-  else if(theta > 50 && attempt == 1)
-  { 
-    attempt = 2;
-  }
-  else if(theta > -50 && attempt == 2)
-  {
-    motors.turnLeft();
-  }
-  else if (theta < -50 && attempt == 2)
-  {
-    //gap state
-    motors.moveForward();
-  }
-}
-*/
 };
 
 

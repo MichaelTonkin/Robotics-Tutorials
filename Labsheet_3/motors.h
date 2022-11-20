@@ -17,7 +17,7 @@
 class Motors_c {
   public:
   int speed = 0;
-
+  int pwm;
     // Constructor, must exist.
     Motors_c() {
 
@@ -34,8 +34,8 @@ class Motors_c {
       // Set initial direction (HIGH/LOW)
       // for the direction pins.
       // ...
-      digitalWrite(L_DIR_PIN, REV);  
-      digitalWrite(R_DIR_PIN, REV);
+      digitalWrite(L_DIR_PIN, FWD);  
+      digitalWrite(R_DIR_PIN, FWD);
       // Set initial power values for the PWM
       // Pins.
       // ...
@@ -104,20 +104,30 @@ void turnRight()
 void moveLeft(int dir)
 {
   setMotorDir(L_PWM_PIN, dir);
+  setMotorPower(L_PWM_PIN, pwm);
   
-  setMotorPower(L_PWM_PIN, 130);
-  motorPause();
-  setMotorPower(L_PWM_PIN, 0);
-  motorPause();
+  /*if (motorPause())
+  {
+    setMotorPower(L_PWM_PIN, 0);
+  }
+  else
+  { 
+  }
+  /*motorPause();*/
 }
 
 void moveRight(int dir)
 {
   setMotorDir(R_PWM_PIN, dir);
-  setMotorPower(R_PWM_PIN, 130);
-  motorPause();
-  setMotorPower(R_PWM_PIN, 0);
-  motorPause();
+  setMotorPower(R_PWM_PIN, pwm);
+  /*if (motorPause())
+  {
+    setMotorPower(R_PWM_PIN, 0);
+  }
+  else
+  { 
+  }
+  /*motorPause();*/
 }
 
 void setMotorPower( int pin, float power )
@@ -153,7 +163,12 @@ int setDirPin(int pwn_pin)
     return R_DIR_PIN;
   }
 }
-    
+
+void setPwm(int new_pwm)
+{
+  pwm = new_pwm;
+}
+
 };
 
 

@@ -1,6 +1,7 @@
 
 #include "motors.h"
 #include "linesensor.h"
+#include "weighted_line.h"
 #include "kinematics.h"
 
 # define STATE_INITIAL 0
@@ -15,7 +16,7 @@
 # define YELLOW_LED 13
 # define RED_LED 17
 
-LineSensor_c linesensor;
+WeightedLine_c weightedLine;
 int state;
 
 void setup() 
@@ -27,21 +28,24 @@ void setup()
   pinMode(YELLOW_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
 
+  weightedLine.initialize();
+  
   state = STATE_INITIAL;
   delay(1000);
 }
 
 void loop() 
 {
-  updateState(); 
-  selectState();
-  linesensor.lineSensorLoop();
+  //updateState(); 
+  //selectState();
+  weightedLine.lineSensorLoop();
+  weightedLine.lineDetector();
 }
 
 bool complete;
 bool end_of_line = false;
 bool return_home = false;
-void updateState()
+/*void updateState()
 {
   Serial.print("");
   if (return_home)
@@ -140,7 +144,7 @@ void foundLineBeeps()
 void followLine()
 {
   linesensor.followLine();
-}
+}*/
 
 void stopRobot()
 {

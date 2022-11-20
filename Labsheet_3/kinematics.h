@@ -40,7 +40,7 @@ class Kinematics_c {
     // your kinematics
     void update() 
     {
-      Serial.println(theta);
+      //Serial.println(theta);
       if (isBotRotating())
       {
         updateTheta();
