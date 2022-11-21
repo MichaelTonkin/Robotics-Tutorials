@@ -39,7 +39,7 @@ void loop()
   //updateState(); 
   //selectState();
   weightedLine.lineSensorLoop();
-  weightedLine.lineDetector();
+  weightedLine.motors.moveForward();
 }
 
 bool complete;

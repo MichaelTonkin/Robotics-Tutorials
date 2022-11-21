@@ -58,7 +58,7 @@ void initialize()
   enableLineSensors();
   motors.initialise();
   motors.setSpeed(100);
-  motors.setPwm(63);
+  motors.setPwm(120);
   /*calibrate(SENSOR_R);
   calibrate(SENSOR_L); 
   calibrate(SENSOR_C); 
