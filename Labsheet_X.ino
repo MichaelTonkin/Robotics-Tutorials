@@ -30,13 +30,13 @@ void setup() {
   // Set initial direction (HIGH/LOW)
   // for the direction pins.
   // ...
-  digitalWrite(L_DIR_PIN, REV);  
-  digitalWrite(R_DIR_PIN, REV);
+  digitalWrite(L_DIR_PIN, FWD);  
+  digitalWrite(R_DIR_PIN, FWD);
   // Set initial power values for the PWM
   // Pins.
   // ...
-  analogWrite(L_PWM_PIN, 0);
-  analogWrite(R_PWM_PIN, 0);
+  analogWrite(L_PWM_PIN, 120);
+  analogWrite(R_PWM_PIN, 120);
 
   // Start serial, send debug text.
   Serial.begin(9600);
@@ -47,18 +47,8 @@ void setup() {
 
 // Repeats.
 void loop() {
-
-  leftMotorTest();
-
-  // An empty loop can block further uploads.
-  // A small delay to prevent this for now.
-  delay(500);
-  while(limit == true)
-  {
-    analogWrite( L_PWM_PIN, 0);
-    analogWrite( R_PWM_PIN, 0);
-    delay(5);
-  }
+  //analogWrite( L_PWM_PIN, 130 );
+  //analogWrite( R_PWM_PIN, 130 );
 }
 
 /*
