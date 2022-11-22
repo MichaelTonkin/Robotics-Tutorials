@@ -17,11 +17,14 @@ void lineFollow()
   float turn_pwm = 60;
 
   turn_pwm = turn_pwm * e_line * 5;
+
   if (turn_pwm < 0)
   {
     turn_pwm = turn_pwm * -1;
   }
+
   motors.setPwm(turn_pwm);
+  
   if (!isOnLine(3000))
   {
     if(e_line > 0) //gone too far right
