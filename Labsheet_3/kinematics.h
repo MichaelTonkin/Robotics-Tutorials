@@ -19,6 +19,7 @@ class Kinematics_c {
 
   int theta;
   int theta_direction;
+  unsigned long distance;
   float r;
 
   public:
@@ -41,15 +42,18 @@ class Kinematics_c {
     void update() 
     {
       //Serial.println(theta);
-      if (isBotRotating())
+      /*if (isBotRotating())
       {
         updateTheta();
       }
       else
       {
         updateDistanceX();
-      }
+      }*/
+      distance = distance + (count_er + count_el);
     }
+
+    
 
     void updateTheta()
     {
