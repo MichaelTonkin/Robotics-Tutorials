@@ -4,9 +4,9 @@
 #include "kinematics.h"
 #include "pid.h"
 
-# define L_PWM_PIN A10
+# define L_PWM_PIN 10
 # define L_DIR_PIN 16
-# define R_PWM_PIN A9
+# define R_PWM_PIN 9
 # define R_DIR_PIN 15
 
 # define FWD HIGH
@@ -35,8 +35,8 @@ void setup() {
   // Set initial power values for the PWM
   // Pins.
   // ...
-  analogWrite(L_PWM_PIN, 120);
-  analogWrite(R_PWM_PIN, 120);
+  analogWrite(L_PWM_PIN, 20);
+  analogWrite(R_PWM_PIN, 20);
 
   // Start serial, send debug text.
   Serial.begin(9600);
