@@ -9,29 +9,43 @@ class WeightedLine_c: public LineSensor_c
   }
 
   
-void lineDetector()
+void lineFollow()
 {
-  float e_line = 0;
+  float e_line;
   e_line = getLineError(); 
 
-  float turn_pwm;
-  turn_pwm = 130;
+  float turn_pwm = 130;
 
   turn_pwm = turn_pwm * e_line;
+  motors.setSpeed(turn_pwm);
+  if (isOnLine(3000))
+  {
+    if(e_line > 0) //gone too far right
+    {
+      motors.turnLeft();
+    }
+    else if (e_line < 0)
+    {
+      motors.turnRight();
+    }
+    else if (e_line == 0)
+    {
+      motors.setSpeed(130);
+      motors.moveForward();
+    }
+  }
+}
 
-  if(e_line > 0) //gone too far right
+bool isOnLine(int threshold)
+{
+  if (sensor_outputs[1] >= threshold)
   {
-    motors.turnLeft();
+    return true;
   }
-  else if (e_line < 0)
+  else
   {
-    motors.turnRight();
+    return false;
   }
-  else if (e_line == 0)
-  {
-    motors.moveForward();
-  }
-  Serial.println(e_line);
 }
 
 float getLineError() 
