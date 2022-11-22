@@ -2,9 +2,9 @@
 // from being included mored than
 // once by the compiler. 
 #define _MOTORS_H
-# define L_PWM_PIN A10
+# define L_PWM_PIN 10
 # define L_DIR_PIN 16
-# define R_PWM_PIN A9
+# define R_PWM_PIN 9
 # define R_DIR_PIN 15
 
 # define FWD LOW

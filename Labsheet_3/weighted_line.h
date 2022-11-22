@@ -14,9 +14,13 @@ void lineFollow()
   float e_line;
   e_line = getLineError(); 
 
-  float turn_pwm = 130;
+  float turn_pwm = 60;
 
-  turn_pwm = turn_pwm * e_line;
+  turn_pwm = turn_pwm * e_line * 10;
+  if (turn_pwm < 0)
+  {
+    turn_pwm = turn_pwm * -1;
+  }
   motors.setSpeed(turn_pwm);
   if (isOnLine(3000))
   {
@@ -30,10 +34,11 @@ void lineFollow()
     }
     else if (e_line == 0)
     {
-      motors.setSpeed(130);
+      motors.setSpeed(20);
       motors.moveForward();
     }
   }
+  Serial.println(e_line);
 }
 
 bool isOnLine(int threshold)
@@ -92,11 +97,6 @@ float getLineError()
   // Return result
   return e_line;
 
-}
-
-float speedGainFunc(float e_line)
-{
-  return e_line * GAIN;
 }
 
 };
