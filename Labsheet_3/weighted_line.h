@@ -4,16 +4,27 @@
 class WeightedLine_c: public LineSensor_c
 {
   public:
+  
+  int index;
+  bool stop = false;
+
   WeightedLine_c()
   {
   }
 
-  
-void lineFollow()
+void getErrorAndTime(float e_line)
+{
+  float time = millis();
+
+  error_time[index][0] = e_line;
+  error_time[index][1] = time;
+  index += 1;
+}
+
+bool lineFollow()
 {
   float e_line;
   e_line = getLineError(); 
-
   float turn_pwm = 60;
 
   turn_pwm = turn_pwm * e_line * 5;
@@ -24,16 +35,21 @@ void lineFollow()
   }
 
   motors.setPwm(turn_pwm);
-  
-  if (!isOnLine(3000))
+  if (stop)
+  {
+    return true;
+  }
+  else if (!isOnLine(3000))
   {
     if(e_line > 0) //gone too far right
     {
       motors.turnLeft();
+      getErrorAndTime(e_line);
     }
     else if (e_line < 0)
     {
       motors.turnRight();
+      getErrorAndTime(e_line);
     }
   }
   else
@@ -42,7 +58,7 @@ void lineFollow()
     motors.moveForward();
   }
   
-  Serial.println(e_line);
+  return false;
 }
 
 bool isOnLine(int threshold)
@@ -71,17 +87,13 @@ float getLineError()
   float n_right;
   float n_centre;
 
-  /*Serial.println(sensor_outputs[0]);
-  Serial.println(sensor_outputs[1]);
-  Serial.println(sensor_outputs[2]);*/
-
-  // Sum ground sensor activation
   lsen_sum = lsen_left + lsen_centre + lsen_right;
-  
-  /*n_left = (lsen_left - (left_min)) / (left_max - left_min); 
-  n_right = (lsen_right - (right_min)) / (right_max - right_min);
-  n_centre = (lsen_centre - (centre_min)) / (centre_max - centre_min);*/
-  
+
+  if(lsen_left < 3000 && lsen_centre < 3000 && lsen_right < 3000)
+  {
+    stop = true;
+  }
+
   n_left = lsen_left / lsen_sum; 
   n_right = lsen_right  / lsen_sum;
   n_centre = lsen_centre  / lsen_sum;
@@ -89,16 +101,8 @@ float getLineError()
   w_left = n_left + (n_centre * 0.5);
   w_right = n_right + (n_centre * 0.5);
 
-  // Normalise individual sensor readings 
-  // against sum
-  //w_left =  (lsen_left - (getMinSenValue(SENSOR_L))) / (getMaxSenValue(SENSOR_L) - getMinSenValue(SENSOR_L)) ;
-  //w_right =  (lsen_right - (getMinSenValue(SENSOR_R))) / (getMaxSenValue(SENSOR_R) - getMinSenValue(SENSOR_R)) ;
-  //w_left =  (lsen_left - (1448)) / (6808 - 1448) ;
-  //w_right =  (lsen_right - (1525)) / (7602 - 1525) ;
-
-  // Calculated error signal
   e_line  = w_left - w_right;
-  // Return result
+  
   return e_line;
 
 }

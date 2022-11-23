@@ -4,13 +4,13 @@
 #include "weighted_line.h"
 #include "kinematics.h"
 
-# define STATE_INITIAL 0
+/*# define STATE_INITIAL 0
 # define STATE_JOIN_LINE 1
 # define STATE_FOUND_LINE 2
+# define STATE_LOST_LINE 5*/
 # define STATE_FOLLOW_LINE 4
-# define STATE_LOST_LINE 5
-# define STATE_STOP 6
-# define STATE_RETURN_HOME 7
+# define STATE_REPORT 6
+# define STATE_STOP 7
 
 # define GREEN_LED 30
 # define YELLOW_LED 13
@@ -30,58 +30,39 @@ void setup()
 
   weightedLine.initialize();
   
-  state = STATE_INITIAL;
+  state = STATE_FOLLOW_LINE;
   delay(1000);
 }
 
 void loop() 
 {
-  //updateState(); 
-  //selectState();
-  weightedLine.lineSensorLoop();
-  weightedLine.lineFollow();
+  updateState(); 
+  selectState();
 }
 
 bool complete;
+bool stopped = false;
 bool end_of_line = false;
-bool return_home = false;
-/*void updateState()
+void updateState()
 {
-  Serial.print("");
-  if (return_home)
-  {
-    state = STATE_RETURN_HOME;
+  if (state == STATE_STOP)
+  {  
+    weightedLine.motors.setPwm(0);    
+    weightedLine.motors.moveForward();
+    stopped = true;
   }
-  else if (state == STATE_INITIAL && linesensor.getInitComplete())
+  else if(state == STATE_FOLLOW_LINE)//I think it is perhaps still trying to call this? Either way this is the only point where motors is called.
   {
-    state = STATE_JOIN_LINE;
-  }
-  else if (state == STATE_JOIN_LINE)
-  {
-    if (linesensor.foundLine() && linesensor.joined == true)
+    weightedLine.lineSensorLoop();
+    if(weightedLine.lineFollow())
     {
-      state = STATE_FOUND_LINE;
+      end_of_line = true;
     }
   }
-  else if (state == STATE_FOLLOW_LINE && (linesensor.foundLine() == 0))
+  else if (state == STATE_REPORT)
   {
-    state = STATE_LOST_LINE;
-  }
-  else if (state == STATE_FOUND_LINE)
-  {
-    if(linesensor.faceLine())
-      state = STATE_FOLLOW_LINE;
-  }
-  else if (state == STATE_LOST_LINE)
-  {
-    if(linesensor.foundLine())
-    {
-      state = STATE_FOUND_LINE;
-    }
-    else if (end_of_line == true)
-    {
-      state = STATE_STOP;
-    }
+    weightedLine.getData();
+    delay(1000);
   }
 
 }
@@ -89,46 +70,13 @@ bool return_home = false;
 void selectState()
 {
   
-if( state == STATE_INITIAL ) {
-
-    linesensor.initialize();    
-
-  } else if( state == STATE_JOIN_LINE ) {
-
-    linesensor.joinLine();
-        
-  } else if( state == STATE_FOUND_LINE ) {
-    foundLineBeeps();
-  }
-  else if (state == STATE_STOP)
+  if (state == STATE_FOLLOW_LINE && end_of_line)
   {
-    stopRobot();
+    state = STATE_STOP;
   }
-  else if (state == STATE_FOLLOW_LINE)
+  else if (state == STATE_STOP && stopped)
   {
-    followLine();
-  }
-  else if (state == STATE_LOST_LINE)
-  {
-    if(linesensor.findLine() == 2)
-    {
-      end_of_line = true;
-    }
-  }
-  else if (state == STATE_RETURN_HOME)
-  {
-    linesensor.returnHome();
-  }
-  else {
-
-    Serial.print("System Error, Unknown state: ");
-    Serial.println( state );
-
-    Serial.print("Error code: ");
-    //Serial.println( error_code );
-
-    stopRobot();
-    signalError();
+    state = STATE_REPORT;
   }
   
 }
@@ -140,23 +88,6 @@ void foundLineBeeps()
   digitalWrite( YELLOW_LED, HIGH );
   //delay(4000);
 }
-
-void followLine()
-{
-  linesensor.followLine();
-}*/
-
-void stopRobot()
-{
-  delay(3000);
-  return_home = true;
-}
-
-void signalError()
-{
-
-}
-
 
 bool timer(unsigned long target_time, unsigned long start_time)
 {

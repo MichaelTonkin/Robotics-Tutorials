@@ -119,27 +119,7 @@ bool faceLine()
   return false;
 }
 
-bool sensorIsOnTape(int sensor, unsigned long tape)
-{
-  if( sensor_outputs[sensor] > tape )
-  {
-    return true;
-  }  
-  else
-  {
-    return false;
-  }
-}
 
-bool getCentreLSenIsOnTape()
-{ 
-    return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]);
-}
-
-bool foundLine()
-{
-  return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]) || sensorIsOnTape(SENSOR_R, tape[SENSOR_R]) || sensorIsOnTape(SENSOR_L, tape[SENSOR_L]);
-}
 
 
 }

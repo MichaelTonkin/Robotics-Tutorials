@@ -4,6 +4,10 @@
 #ifndef _LINESENSOR_H
 #define _LINESENSOR_H
 
+# include <USBCore.h>    // To fix serial print behaviour bug.
+u8 USB_SendSpace(u8 ep);
+# define SERIAL_ACTIVE (USB_SendSpace(CDC_TX) >= 50)
+
 #include "Kinematics.h"
 
 # define LSEN_LEFT_IN_PIN A0
@@ -18,7 +22,7 @@
 # define SENSOR_L 0
 # define SENSOR_C 1
 # define SENSOR_R 2
-
+# define ERROR_TIME_SIZE 300
 // Class to operate the linesensor(s).
 class LineSensor_c {
   public:
@@ -27,15 +31,7 @@ class LineSensor_c {
   bool rightIsOnTape;
   bool initComplete;
   bool debug;
-  
-  unsigned long left_min = 1370;
-  unsigned long left_max = 5700;
-  
-  unsigned long right_min = 1470;
-  unsigned long right_max = 5330;
-
-  unsigned long centre_min = 1280;
-  unsigned long centre_max = 5028;
+  float error_time[ERROR_TIME_SIZE][1];//[time][error]
 
   Motors_c motors;
   Kinematics_c kinematics;
@@ -281,6 +277,46 @@ unsigned long calculateElapsedTime(unsigned long start_time, unsigned long end_t
   return end_time - start_time;
 }
 
+
+void getData() {
+
+  // Print millis for debug so we can 
+  // validate this is working in real
+  // time, and not glitched somehow
+  if( SERIAL_ACTIVE ) Serial.print( "Time(ms): " );
+  if( SERIAL_ACTIVE ) Serial.println( millis() );
+  delay(1);
+
+
+  // Loop through array to print all 
+  // results collected
+  int i,j;  
+  for( j = 0; j < ERROR_TIME_SIZE; j++ ) {   // row
+    for( i = 0; i < 2; i++ ) { // col
+
+      // Comma seperated values, to 2 decimal places
+      if( SERIAL_ACTIVE && i == 0)
+      { 
+        Serial.print( "Error " );
+      }
+      else if (SERIAL_ACTIVE && i == 1)
+      {
+        Serial.print(" Time ");
+      }
+      delay(1);
+      if( SERIAL_ACTIVE ) Serial.print( error_time[j][i], 2 );
+      delay(1);
+      if( SERIAL_ACTIVE ) Serial.print( "," );
+      delay(1);
+    }
+    if( SERIAL_ACTIVE ) Serial.print( "\n" ); // new row
+  }
+
+  if( SERIAL_ACTIVE ) Serial.println( "---End of Results ---\n\n" ); 
+
+}
+
+
 void printElapsedTime(unsigned long elapsed_time[])
 {
   for (int i = 0; i < MAX_LSEN_PIN; i++)
@@ -302,6 +338,29 @@ bool pinIsHigh()
   }
   return false;
 }
+
+bool sensorIsOnTape(int sensor, unsigned long tape)
+{
+  if( sensor_outputs[sensor] > tape )
+  {
+    return true;
+  }  
+  else
+  {
+    return false;
+  }
+}
+
+bool getCentreLSenIsOnTape()
+{ 
+    return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]);
+}
+
+bool foundLine()
+{
+  return sensorIsOnTape(SENSOR_C, tape[SENSOR_C]) || sensorIsOnTape(SENSOR_R, tape[SENSOR_R]) || sensorIsOnTape(SENSOR_L, tape[SENSOR_L]);
+}
+
 };
 
 
