@@ -7,6 +7,7 @@ class WeightedLine_c: public LineSensor_c
   
   int index;
   bool stop = false;
+  unsigned long start_time;
 
   WeightedLine_c()
   {
@@ -14,11 +15,23 @@ class WeightedLine_c: public LineSensor_c
 
 void getErrorAndTime(float e_line)
 {
-  float time = millis();
+  
+  unsigned long time = millis();
+  if (time >= start_time + 10)
+  {
+    start_time = time;
+    if(e_line == 0)
+    {
+      //do nothing
+    }
+    else
+    {
 
-  error_time[index][0] = e_line;
-  error_time[index][1] = time;
-  index += 1;
+      error_time[index][0] = e_line;
+      error_time[index][1] = time;
+    }
+    index += 1;
+  }
 }
 
 bool lineFollow()

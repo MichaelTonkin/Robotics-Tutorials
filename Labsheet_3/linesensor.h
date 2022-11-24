@@ -22,7 +22,7 @@ u8 USB_SendSpace(u8 ep);
 # define SENSOR_L 0
 # define SENSOR_C 1
 # define SENSOR_R 2
-# define ERROR_TIME_SIZE 300
+# define ERROR_TIME_SIZE 200
 // Class to operate the linesensor(s).
 class LineSensor_c {
   public:
@@ -31,7 +31,7 @@ class LineSensor_c {
   bool rightIsOnTape;
   bool initComplete;
   bool debug;
-  float error_time[ERROR_TIME_SIZE][1];//[time][error]
+  float error_time[ERROR_TIME_SIZE][2];//[time][error]
 
   Motors_c motors;
   Kinematics_c kinematics;
@@ -287,24 +287,25 @@ void getData() {
   if( SERIAL_ACTIVE ) Serial.println( millis() );
   delay(1);
 
+  //if(SERIAL_ACTIVE) Serial.println(sizeof(error_time[1][5000]);
 
   // Loop through array to print all 
   // results collected
-  int i,j;  
-  for( j = 0; j < ERROR_TIME_SIZE; j++ ) {   // row
-    for( i = 0; i < 2; i++ ) { // col
+  int p,q;  
+  for( p = 0; p < ERROR_TIME_SIZE; p++ ) {   // row
+    for( q = 0; q < 2; q++ ) { // col
 
       // Comma seperated values, to 2 decimal places
-      if( SERIAL_ACTIVE && i == 0)
+      if( SERIAL_ACTIVE && q == 0)
       { 
         Serial.print( "Error " );
       }
-      else if (SERIAL_ACTIVE && i == 1)
+      else if (SERIAL_ACTIVE && q == 1)
       {
         Serial.print(" Time ");
       }
       delay(1);
-      if( SERIAL_ACTIVE ) Serial.print( error_time[j][i], 2 );
+      if( SERIAL_ACTIVE ) Serial.print( error_time[p][q], 2 );
       delay(1);
       if( SERIAL_ACTIVE ) Serial.print( "," );
       delay(1);
