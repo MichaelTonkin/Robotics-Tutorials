@@ -50,11 +50,11 @@ LineSensor_c() {
 
 void initialize()
 {
-  debug = false;
+  debug = true;
   enableLineSensors();
   motors.initialise();
   motors.setSpeed(100);
-  motors.setPwm(120);
+  motors.setPwm(60);
   /*calibrate(SENSOR_R);
   calibrate(SENSOR_L); 
   calibrate(SENSOR_C); 
@@ -296,7 +296,7 @@ void getData() {
     for( q = 0; q < 2; q++ ) { // col
 
       // Comma seperated values, to 2 decimal places
-      if( SERIAL_ACTIVE && q == 0)
+      /*if( SERIAL_ACTIVE && q == 0)
       { 
         Serial.print( "Error " );
       }
@@ -304,7 +304,7 @@ void getData() {
       {
         Serial.print(" Time ");
       }
-      delay(1);
+      delay(1);*/
       if( SERIAL_ACTIVE ) Serial.print( error_time[p][q], 2 );
       delay(1);
       if( SERIAL_ACTIVE ) Serial.print( "," );

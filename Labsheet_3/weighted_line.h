@@ -6,6 +6,7 @@ class WeightedLine_c: public LineSensor_c
   public:
   
   int index;
+  int threshold = 1600;
   bool stop = false;
   unsigned long start_time;
 
@@ -52,7 +53,7 @@ bool lineFollow()
   {
     return true;
   }
-  else if (!isOnLine(3000))
+  else if (!isOnLine(threshold))
   {
     if(e_line > 0) //gone too far right
     {
@@ -102,7 +103,7 @@ float getLineError()
 
   lsen_sum = lsen_left + lsen_centre + lsen_right;
 
-  if(lsen_left < 3000 && lsen_centre < 3000 && lsen_right < 3000)
+  if(lsen_left < threshold && lsen_centre < threshold && lsen_right < threshold)
   {
     stop = true;
   }
