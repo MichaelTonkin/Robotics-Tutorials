@@ -40,8 +40,8 @@ bool lineFollow()
   float e_line;
   e_line = getLineError(); 
   float turn_pwm = 60;
-  int turn_mod = 5
-  int forward_pwm = 20
+  int turn_mod = 5;
+  int forward_pwm = 20;
   
   turn_pwm = turn_pwm * e_line * turn_mod;
 
