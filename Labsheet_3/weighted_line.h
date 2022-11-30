@@ -40,8 +40,10 @@ bool lineFollow()
   float e_line;
   e_line = getLineError(); 
   float turn_pwm = 60;
-
-  turn_pwm = turn_pwm * e_line * 5;
+  int turn_mod = 5
+  int forward_pwm = 20
+  
+  turn_pwm = turn_pwm * e_line * turn_mod;
 
   if (turn_pwm < 0)
   {
@@ -68,7 +70,7 @@ bool lineFollow()
   }
   else
   {
-    motors.setPwm(20);
+    motors.setPwm(forward_pwm);
     motors.moveForward();
   }
   
